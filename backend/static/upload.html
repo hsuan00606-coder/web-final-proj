@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>歐趴書局 - 二手教科書上架中心</title>
+    <style>
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; color: #2c3e50; }
+        .form-container { border: 1px solid #e0e0e0; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #ffffff; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .form-group input[type="file"] { margin-top: 5px; }
+        .btn-submit { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .btn-submit:hover { background: #219653; }
+        .back-link { display: block; text-align: center; margin-top: 15px; color: #7f8c8d; text-decoration: none; }
+        .back-link:hover { color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>📤 歐趴書局 - 賣家二手書上架</h2>
+        <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 25px;">請填寫書籍資訊並上傳實體照片，AI 助理會自動將您的書籍同步至推薦系統中。</p>
+        
+        <div class="form-group">
+            <label for="title">教科書完整書名</label>
+            <input type="text" id="title" placeholder="例如：計算機組織與設計 (Computer Organization)">
+        </div>
+
+        <div class="form-group">
+            <label for="price">欲售定價 (TWD)</label>
+            <input type="number" id="price" placeholder="例如：450">
+        </div>
+
+        <div class="form-group">
+            <label for="description">書籍詳細敘述 / 書況</label>
+            <textarea id="description" rows="5" placeholder="請描述書況（如：微鉛筆筆記、大二資工必修、張三教授課程適用...）"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="image">上傳書籍實體照片</label>
+            <input type="file" id="image" accept="image/*">
+        </div>
+
+        <button id="upload-btn" class="btn-submit">確認發布商品</button>
+        <a href="index.html" class="back-link">返回書局助理首頁</a>
+    </div>
+
+    <script>
+        // 串接與控制按鈕上傳功能 (Spec 規範合約)
+        document.getElementById('upload-btn').addEventListener('click', async () => {
+            const title = document.getElementById('title').value.trim();
+            const price = document.getElementById('price').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const imageFile = document.getElementById('image').files[0];
+            
+            // 權限檢查：防呆，確認賣家是否已經處於登入狀態
+            const userJson = localStorage.getItem('user');
+            if(!userJson) {
+                alert("【系統提示】請先登入買/賣家帳號才能執行上架！");
+                window.location.href = 'login.html';
+                return;
+            }
+            const sellerEmail = JSON.parse(userJson).email;
+
+            // 欄位防呆校驗
+            if(!title || !price || !description || !imageFile) {
+                alert("請注意：所有欄位與書籍照片皆為必填項目！");
+                return;
+            }
+
+            // 🎯 核心技術點：建立 FormData 物件來包裝二進位檔案與文字數據
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("price", price);
+            formData.append("description", description);
+            formData.append("seller_email", sellerEmail);
+            formData.append("image", imageFile); // 圖片檔案
+
+            try {
+                // 發送 FormData 請求給 FastAPI 後端 (方案 A 同源路徑)
+                const response = await fetch('/api/books/upload', {
+                    method: 'POST',
+                    body: formData  // 瀏覽器會自動生成對應的 multipart/form-data 邊界，切勿手動加 Content-Type Header
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.status === 'success') {
+                    alert("🎉 上架成功！商品照片與向量數據已完成同步。");
+                    // 毫秒級即時跳轉回首頁，方便買家透過 AI 助理搜尋
+                    window.location.href = 'index.html'; 
+                } else {
+                    alert("上架失敗：" + (result.detail || "未知錯誤"));
+                }
+            } catch (err) {
+                alert("錯誤：無法連線至後端容器，請檢查 `web-backend` 是否正常運行。");
+            }
+        });
+    </script>
+</body>
+</html>

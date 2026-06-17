@@ -1,70 +1,237 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>歐趴書局 - 二手書智慧拍賣網</title>
-    <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
-        .chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
-        .input-group { display: flex; }
-        .input-group input { flex: 1; padding: 10px; }
-        .input-group button { padding: 10px 20px; }
-        .nav { margin-bottom: 20px; text-align: right; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 商品列表</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container {
+      flex: 1;
+      padding: 20px 0;
+      /* 🎯 關鍵修改：將首頁改為雙欄 layout 完美對齊設計圖 */
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    /* 🤖 左側 AI Agent 對話框樣式 */
+    .ai-agent-card {
+      background-color: #fcd5b5;
+      border-radius: 35px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      height: 580px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ai-card-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .chat-history {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 15px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .chat-msg { margin-bottom: 12px; font-size: 0.95rem; line-height: 1.4; }
+    .chat-msg.ai { color: #e67e22; }
+    .chat-msg.user { color: #2c3e50; text-align: right; }
+
+    .chat-input-group { display: flex; gap: 8px; }
+    .chat-input-group input {
+      flex: 1; padding: 12px 18px; border: none; border-radius: 20px; outline: none; font-size: 0.95rem;
+    }
+    .btn-chat-send {
+      background-color: #e67e22; color: white; border-radius: 20px; padding: 0 20px; font-weight: bold;
+    }
+
+    /* 右側商品格線保持原樣 */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 25px;
+    }
+
+    /* 其餘樣式完全繼承你原本的設定 */
+    .product-card {
+      background-color: #fff; border-radius: 30px; padding: 20px; display: flex; flex-direction: column; gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,0.1); }
+    .product-card-img {
+      width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 20px; background-color: #f0e0c8;
+      display: flex; align-items: center; justify-content: center; color: #f5974b; font-size: 2.5rem; overflow: hidden;
+    }
+    .product-card-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+    .product-card-name {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #2c3e50;
+      line-height: 1.4;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+    }
+    .product-card-author { font-size: 0.85rem; color: #7f8c8d; }
+    .product-card-price { font-size: 1rem; font-weight: bold; color: #e67e22; }
+    .product-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; gap: 8px; }
+    .btn-add-cart-sm { background-color: #fcd5b5; padding: 8px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #2c3e50; white-space: nowrap; }
+    .btn-add-cart-sm:hover { background-color: #e67e22; color: white; }
+    .search-hint { margin-bottom: 20px; font-size: 1rem; color: #2c3e50; background-color: rgba(255,255,255,0.4); display: inline-block; padding: 8px 20px; border-radius: 20px; }
+    .search-hint span { font-weight: bold; color: #e67e22; }
+    .loading-text { text-align: center; color: #2c3e50; font-size: 1.1rem; padding: 60px; }
+  </style>
 </head>
 <body>
-    <div class="nav">
-        <span id="user-display">訪客身份</span> | 
-        <a href="login.html">登入 / 註冊</a>
-    </div>
+  <div id="header-placeholder"></div>
 
-    <h1>📚 歐趴書局 - 智慧 AI 助理</h1>
+  <main class="main-container">
     
-    <div class="chat-box" id="chat-box">
-        <p><b>AI 助理:</b> 哈囉！我是歐趴書局的智慧課業二手書媒合助理。想找什麼領域的教科書呢？</p>
-    </div>
+    <section class="ai-agent-card">
+      <div class="ai-card-title">🤖 AI Agent 智慧課業助理</div>
+      <div class="chat-history" id="chat-history">
+        <div class="chat-msg ai"><b>AI 助理:</b> 你好！我是中原大學歐趴書局助理。想找什麼必修科目的二手教科書嗎？</div>
+      </div>
+      <div class="chat-input-group">
+        <input type="text" id="chat-input" placeholder="對話搜尋，如：我想找Linux...">
+        <button class="btn-chat-send" id="btn-chat-send">發送</button>
+      </div>
+    </section>
 
-    <div class="input-group">
-        <input type="text" id="user-input" placeholder="請輸入對話訊息，例如：我想找計算機組織...">
-        <button id="send-btn">發送訊息</button>
+    <div>
+      <div id="search-hint-box"></div>
+      <div id="product-grid" class="product-grid">
+        <div class="loading-text">載入商品中...</div>
+      </div>
     </div>
+  </main>
 
-    <script>
-        // 隨機產生這一次網頁開啟的 Session ID
-        const sessionId = "session_" + Math.random().toString(36).substr(2, 9);
-        
-        // 檢查是否有登入狀態紀錄
-        const user = localStorage.getItem('user');
-        if(user) {
-            document.getElementById('user-display').innerText = "歡迎，" + JSON.parse(user).name;
+  <div id="toast"></div>
+
+  <script src="common.js"></script>
+  <script>
+    initHeader({ activePage: "", showSearch: true });
+
+    const params = new URLSearchParams(location.search);
+    const keyword = params.get("q") || "";
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("search-input");
+      if (input && keyword) input.value = keyword;
+    });
+
+    // ==========================================
+    // 🤖 串接 AI Agent 對話與動態模糊篩選邏輯
+    // ==========================================
+    const sessionId = "session_" + Math.random().toString(36).substr(2, 9);
+
+    document.getElementById('btn-chat-send').addEventListener('click', handleAiChat);
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') handleAiChat();
+    });
+
+    async function handleAiChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if(!msg) return;
+
+      const history = document.getElementById('chat-history');
+      history.innerHTML += `<div class="chat-msg user"><b>你:</b> ${msg}</div>`;
+      input.value = "";
+      history.scrollTop = history.scrollHeight;
+
+      // 顯示思考中佔位訊息
+      const thinkingId = 'thinking-' + Date.now();
+      history.innerHTML += `<div class="chat-msg ai" id="${thinkingId}"><b>AI 助理:</b> 思考中...</div>`;
+      history.scrollTop = history.scrollHeight;
+
+      try {
+        const res = await fetch('/api/v1/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, message: msg })
+        });
+        const data = await res.json();
+
+        const el = document.getElementById(thinkingId);
+        if (el) el.innerHTML = `<b>AI 助理:</b> ${data.reply}`;
+        history.scrollTop = history.scrollHeight;
+
+        // 根據使用者訊息直接搜尋右側商品，不跳頁（保留對話記錄）
+        loadProducts(msg);
+      } catch(err) {
+        const el = document.getElementById(thinkingId);
+        if (el) el.innerHTML = `<b style="color:red">系統提示:</b> AI 助理連線異常`;
+      }
+    }
+
+    // ==========================================
+    // 原生商品加載 (完全保持你原汁原味的邏輯)
+    // ==========================================
+    async function loadProducts(searchKeyword) {
+      const q = searchKeyword !== undefined ? searchKeyword : keyword;
+      try {
+        const url = q ? `/products?q=${encodeURIComponent(q)}` : "/products";
+        const products = await apiFetch(url);
+
+        const hintBox = document.getElementById("search-hint-box");
+        if (q) {
+          hintBox.innerHTML = `<div class="search-hint">搜尋「<span>${q}</span>」，共找到 ${products.length} 筆結果</div>`;
+        } else {
+          hintBox.innerHTML = "";
         }
 
-        // 綁定發送按鈕控制功能 (Spec 規範的 API 通訊合約)
-        document.getElementById('send-btn').addEventListener('click', async () => {
-            const inputField = document.getElementById('user-input');
-            const message = inputField.value.trim();
-            if(!message) return;
+        const grid = document.getElementById("product-grid");
+        if (!products.length) {
+          grid.innerHTML = `<div class="loading-text">😢 找不到符合的商品</div>`;
+          return;
+        }
 
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML += `<p><b>你:</b> ${message}</p>`;
-            inputField.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
+        grid.innerHTML = products.map((p) => `
+          <div class="product-card" onclick="location.href='/product.html?id=${p.id}'">
+            <div class="product-card-img">
+              <img src="${p.image}" alt="${p.name}" onerror="this.parentElement.innerHTML='📚'">
+            </div>
+            <div class="product-card-name">${p.name}</div>
+            <div class="product-card-author">作者：${p.author}</div>
+            <div class="product-card-footer">
+              <div class="product-card-price">$ ${p.price}</div>
+              <div>${renderStars(p.rating)}</div>
+            </div>
+            <button class="btn-add-cart-sm" onclick="event.stopPropagation(); addToCartFromList(${JSON.stringify(p).replace(/"/g,'&quot;')})">🛒 加入購物車</button>
+          </div>
+        `).join("");
 
-            try {
-                // 發送請求給 FastAPI 後端
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, message: message })
-                });
-                const data = await response.json();
-                
-                chatBox.innerHTML += `<p><b>AI 助理:</b> ${data.reply}</p>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (err) {
-                chatBox.innerHTML += `<p style="color:red;"><b>系統錯誤:</b> 無法連線至後端服務。</p>`;
-            }
-        });
-    </script>
+      } catch (err) {
+        document.getElementById("product-grid").innerHTML = `<div class="loading-text">載入失敗：${err.message}</div>`;
+      }
+    }
+
+    function addToCartFromList(product) {
+      Cart.add(product, 1);
+      const navCart = document.getElementById("nav-cart");
+      if (navCart) {
+        const c = Cart.count();
+        navCart.textContent = c > 0 ? `購物車 (${c})` : "購物車";
+      }
+      showToast(`✅ 已加入購物車：${product.name}`);
+    }
+
+    loadProducts();
+  </script>
 </body>
 </html>

@@ -1,18 +1,47 @@
-{
-  "users": [
-    {
-      "email": "buyer@test.edu.tw",
-      "password_hash": "$2b$12$ZzkL80LOn.0EUpfA23p4eOskXN6.r2vWh/bpxE5.3Q5vS2fX3L8P.",
-      "name": "測試買家"
-    },
-    {
-      "email": "seller@test.edu.tw",
-      "password_hash": "$2b$12$ZzkL80LOn.0EUpfA23p4eOskXN6.r2vWh/bpxE5.3Q5vS2fX3L8P.",
-      "name": "測試賣家"
-    }
-  ],
-  "books": [
-    { "title": "計算機組織與設計", "price": 450, "status": "available", "seller_email": "seller@test.edu.tw" },
-    { "title": "演算法導論", "price": 600, "status": "available", "seller_email": "seller@test.edu.tw" }
-  ]
-}
+[
+  {
+    "title": "演算法導論",
+    "author": "Thomas H. Cormen",
+    "price": 600,
+    "status": "available",
+    "image_url": "/static/uploads/01.jpg",
+    "rating": 5,
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "計算機組織與設計",
+    "author": "David A. Patterson",
+    "price": 450,
+    "status": "available",
+    "image_url": "/static/uploads/02.jpg",
+    "rating": 4,
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "作業系統概念",
+    "author": "Abraham Silberschatz",
+    "price": 500,
+    "status": "available",
+    "image_url": "/static/uploads/03.jpg",
+    "rating": 5,
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "資料庫系統概論",
+    "author": "Ramez Elmasri",
+    "price": 480,
+    "status": "available",
+    "image_url": "/static/uploads/04.jpg",
+    "rating": 4,
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "計算機網路",
+    "author": "James F. Kurose",
+    "price": 550,
+    "status": "available",
+    "image_url": "/static/uploads/05.jpg",
+    "rating": 5,
+    "seller_email": "seller@test.edu.tw"
+  }
+]

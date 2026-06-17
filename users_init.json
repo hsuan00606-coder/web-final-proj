@@ -1,0 +1,12 @@
+[
+  {
+    "email": "buyer@test.edu.tw",
+    "password_hash": "$2b$12$ZzkL80LOn.0EUpfA23p4eOskXN6.r2vWh/bpxE5.3Q5vS2fX3L8P.",
+    "name": "測試買家"
+  },
+  {
+    "email": "seller@test.edu.tw",
+    "password_hash": "$2b$12$ZzkL80LOn.0EUpfA23p4eOskXN6.r2vWh/bpxE5.3Q5vS2fX3L8P.",
+    "name": "測試賣家"
+  }
+]

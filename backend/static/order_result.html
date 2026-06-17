@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 訂單查詢</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .result-card {
+      background-color: #fcd5b5;
+      border-radius: 35px;
+      padding: 40px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    /* 成功訊息 */
+    .success-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: #d4edda;
+      border-radius: 20px;
+      padding: 16px 25px;
+      margin-bottom: 25px;
+    }
+
+    .success-banner .icon { font-size: 1.5rem; }
+    .success-banner .text { font-size: 1.2rem; font-weight: bold; color: #155724; }
+
+    /* 訂單 ID 框 */
+    .order-id-box {
+      background-color: white;
+      border-radius: 20px;
+      padding: 18px 25px;
+      margin-bottom: 30px;
+      display: inline-block;
+    }
+
+    .order-id-box p { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 5px; }
+    .order-id-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .order-id-val {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .btn-copy {
+      background-color: #fcd5b5;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      color: #2c3e50;
+    }
+
+    /* 商品表格 */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+
+    .items-table th {
+      text-align: left;
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .items-table td {
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-size: 0.95rem;
+      color: #2c3e50;
+      vertical-align: middle;
+    }
+
+    .item-img-sm {
+      width: 48px;
+      height: 60px;
+      border-radius: 10px;
+      background-color: #f0e0c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      overflow: hidden;
+    }
+
+    .item-img-sm img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 10px;
+    }
+
+    /* 金額摘要 */
+    .amount-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .amount-row {
+      display: flex;
+      gap: 40px;
+      justify-content: flex-end;
+      font-size: 0.95rem;
+      color: #2c3e50;
+    }
+
+    .amount-row.total {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e67e22;
+      border-top: 2px solid rgba(0,0,0,0.1);
+      padding-top: 8px;
+      margin-top: 5px;
+    }
+
+    /* 底部資訊三欄 */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 25px;
+    }
+
+    .info-box {
+      background-color: white;
+      border-radius: 20px;
+      padding: 20px 22px;
+    }
+
+    .info-box-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      font-size: 0.9rem;
+      color: #2c3e50;
+      line-height: 1.7;
+    }
+
+    /* 追蹤進度條 */
+    .tracking-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 5px;
+    }
+
+    .track-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .track-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background-color: #ddd;
+      color: white;
+    }
+
+    .track-icon.done { background-color: #2ecc71; }
+    .track-icon.active { background-color: #3498db; }
+
+    .track-label {
+      font-size: 0.75rem;
+      color: #7f8c8d;
+      white-space: nowrap;
+    }
+
+    .track-line {
+      flex: 1;
+      height: 3px;
+      background-color: #ddd;
+      margin-bottom: 18px;
+    }
+
+    .track-line.done { background-color: #2ecc71; }
+
+    /* 查詢框（頁面上方） */
+    .search-order-bar {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .search-order-bar input {
+      flex: 1;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      outline: none;
+      background-color: white;
+    }
+
+    .search-order-bar input:focus {
+      box-shadow: 0 0 0 3px rgba(230,126,34,0.25);
+    }
+
+    .btn-search-order {
+      background-color: #e67e22;
+      color: white;
+      padding: 14px 30px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+
+    <!-- 訂單查詢框 -->
+    <div class="result-card">
+      <div class="page-title">訂單成立與查詢</div>
+      <div class="search-order-bar">
+        <input type="text" id="search-order-input" placeholder="輸入訂單編號（如 AP-12345678）">
+        <button class="btn-search-order" onclick="searchOrder()">查詢</button>
+      </div>
+    </div>
+
+    <!-- 訂單結果區 -->
+    <div id="order-result-area"></div>
+
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    if (!Auth.isLoggedIn()) location.href = "/log_in.html";
+
+    initHeader({ activePage: "order_result", showSearch: false });
+
+    // 若從結帳頁跳轉，自動顯示最新訂單
+    const lastId = localStorage.getItem("lastOrderId");
+    if (lastId) {
+      localStorage.removeItem("lastOrderId");
+      loadOrder(lastId, true);
+      document.getElementById("search-order-input").value = lastId;
+    }
+    // 若從歷史訂單頁跳轉，自動查詢該訂單
+    const queryId = localStorage.getItem("queryOrderId");
+    if (queryId && !lastId) {
+      localStorage.removeItem("queryOrderId");
+      loadOrder(queryId, false);
+      document.getElementById("search-order-input").value = queryId;
+    }
+
+    async function searchOrder() {
+      const id = document.getElementById("search-order-input").value.trim();
+      if (!id) { showToast("請輸入訂單編號"); return; }
+      loadOrder(id, false);
+    }
+
+    async function loadOrder(orderId, isNew) {
+      const area = document.getElementById("order-result-area");
+      area.innerHTML = `<div class="result-card"><div class="loading-text">查詢中...</div></div>`;
+      try {
+        const order = await apiFetch(`/orders/${orderId}`);
+        renderOrder(order, isNew);
+      } catch (err) {
+        area.innerHTML = `<div class="result-card"><div class="empty-state"><div class="icon">📭</div><p>找不到訂單：${orderId}</p></div></div>`;
+      }
+    }
+
+    function renderOrder(order, isNew) {
+      const area = document.getElementById("order-result-area");
+      const stage = order.trackingStage || 1;
+      const steps = [
+        { label: "訂單成立", icon: "✓" },
+        { label: "處理中",   icon: "⚙" },
+        { label: "配送中",   icon: "🚗" },
+        { label: "已送達",   icon: "📦" },
+      ];
+
+      const trackingHtml = steps.map((s, i) => {
+        const stepNum = i + 1;
+        const cls = stepNum < stage ? "done" : stepNum === stage ? "active" : "";
+        const lineClass = stepNum < stage ? "done" : "";
+        return `
+          <div class="track-step">
+            <div class="track-icon ${cls}">${s.icon}</div>
+            <span class="track-label">${s.label}</span>
+          </div>
+          ${i < steps.length - 1 ? `<div class="track-line ${lineClass}"></div>` : ""}
+        `;
+      }).join("");
+
+      area.innerHTML = `
+        <div class="result-card">
+          ${isNew ? `
+            <div class="success-banner">
+              <span class="icon">✅</span>
+              <span class="text">訂單已成功成立！</span>
+            </div>` : ""}
+
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:30px">
+            <!-- 左：訂單 ID -->
+            <div>
+              <div class="order-id-box">
+                <p>訂單 ID:</p>
+                <p style="color:#7f8c8d;font-size:0.85rem">訂單編號：</p>
+                <div class="order-id-row">
+                  <span class="order-id-val">#${order.orderId}</span>
+                  <button class="btn-copy" onclick="navigator.clipboard.writeText('${order.orderId}');showToast('已複製')">📋</button>
+                </div>
+                <p style="margin-top:6px;font-size:0.85rem;color:#7f8c8d">訂單日期: ${order.date}</p>
+              </div>
+            </div>
+
+            <!-- 右：商品表格 + 金額 -->
+            <div>
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>商品</th>
+                    <th>單位價</th>
+                    <th>Qty</th>
+                    <th style="text-align:right">分小計</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.items.map(item => `
+                    <tr>
+                      <td><div class="item-img-sm">📚</div></td>
+                      <td>${item.name}</td>
+                      <td>$${item.price.toFixed(2)}</td>
+                      <td>${item.qty}</td>
+                      <td style="text-align:right">$${(item.price * item.qty).toFixed(2)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+
+              <div class="amount-summary">
+                <div class="amount-row"><span>小計</span><span>$${order.items.reduce((s,i)=>s+i.price*i.qty,0).toFixed(2)}</span></div>
+                <div class="amount-row"><span>運費</span><span>$${order.shipping.toFixed(2)}</span></div>
+                <div class="amount-row"><span>稅務</span><span>$${order.tax.toFixed(2)}</span></div>
+                ${order.discount ? `<div class="amount-row"><span>折扣(Coupon)</span><span>${order.discount.toFixed(2)}</span></div>` : ""}
+                <div class="amount-row total"><span>總計</span><span>$${order.total.toFixed(2)}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 底部三欄 -->
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-box-title">配送資訊</div>
+              <p>配送地址：${order.delivery?.address || "-"}</p>
+              <p>收收人名：${order.delivery?.name || "-"}</p>
+              <p>電話電話：${order.delivery?.phone || "-"}</p>
+            </div>
+            <div class="info-box">
+              <div class="info-box-title">付款資訊</div>
+              <p>付款方式：${order.payment?.method || "-"}${order.payment?.last4 ? " ****" + order.payment.last4 : ""}</p>
+              <p>付款狀況：${order.payment?.status || "-"}</p>
+            </div>
+            <div class="info-box">
+              <div class="info-box-title">訂單狀態追蹤</div>
+              <div class="tracking-bar">${trackingHtml}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:25px;display:flex;gap:15px">
+            <button class="btn-pill btn-primary" onclick="location.href='/orders.html'">查看歷史訂單</button>
+            <button class="btn-pill" onclick="location.href='/index.html'">繼續購物</button>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

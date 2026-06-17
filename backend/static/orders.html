@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 歷史訂單</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 0;
+    }
+
+    .orders-card {
+      background-color: #fcd5b5;
+      border-radius: 35px;
+      padding: 40px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    /* 表頭 */
+    .orders-table {
+      width: 100%;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 140px 130px 1fr 80px 80px 80px 90px 110px 110px;
+      gap: 10px;
+      padding: 10px 15px;
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+
+    /* 訂單行 */
+    .order-row {
+      display: grid;
+      grid-template-columns: 140px 130px 1fr 80px 80px 80px 90px 110px 110px;
+      gap: 10px;
+      padding: 20px 15px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      align-items: center;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      transition: background-color 0.15s;
+    }
+
+    .order-row:hover { background-color: rgba(255,255,255,0.25); border-radius: 15px; }
+    .order-row:last-of-type { border-bottom: none; }
+
+    /* 商品名稱清單 */
+    .item-names {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .item-name-tag {
+      font-size: 0.85rem;
+      color: #2c3e50;
+      line-height: 1.4;
+    }
+
+    .order-total {
+      font-weight: bold;
+      color: #e67e22;
+    }
+
+    /* 狀態徽章 */
+    .status-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .status-icon.delivered { background-color: #2ecc71; }
+    .status-icon.processing { background-color: #95a5a6; }
+    .status-icon.shipping  { background-color: #3498db; }
+
+    .status-label {
+      font-size: 0.8rem;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    /* 查看詳情按鈕 */
+    .btn-detail {
+      background-color: white;
+      padding: 8px 16px;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #2c3e50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .btn-detail:hover { background-color: #e67e22; color: white; }
+
+    @media (max-width: 900px) {
+      .table-header { display: none; }
+      .order-row {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        background-color: rgba(255,255,255,0.3);
+        border-radius: 20px;
+        margin-bottom: 12px;
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+    <div class="orders-card" id="orders-content">
+      <div class="loading-text">載入中...</div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    if (!Auth.isLoggedIn()) location.href = "/log_in.html";
+
+    initHeader({ activePage: "orders", showSearch: false });
+
+    function statusInfo(status) {
+      const map = {
+        "已送達": { cls: "delivered", icon: "✓" },
+        "配送中": { cls: "shipping",  icon: "🚗" },
+        "處理中": { cls: "processing", icon: "−" },
+      };
+      return map[status] || { cls: "processing", icon: "?" };
+    }
+
+    async function loadOrders() {
+      const content = document.getElementById("orders-content");
+      try {
+        const orders = await apiFetch("/orders");
+
+        if (!orders.length) {
+          content.innerHTML = `
+            <div class="page-title">歷史訂單</div>
+            <div class="empty-state">
+              <div class="icon">📭</div>
+              <p>尚無訂單記錄</p>
+              <button class="btn-pill btn-primary" style="margin-top:20px" onclick="location.href='/index.html'">去購物</button>
+            </div>`;
+          return;
+        }
+
+        content.innerHTML = `
+          <div class="page-title">歷史訂單</div>
+          <div class="orders-table">
+            <div class="table-header">
+              <span>訂單ID</span>
+              <span>訂單日期</span>
+              <span>商品名稱</span>
+              <span>運費</span>
+              <span>稅務</span>
+              <span>折惠</span>
+              <span>總計</span>
+              <span>訂單狀態</span>
+              <span></span>
+            </div>
+
+            ${orders.map(order => {
+              const s = statusInfo(order.status);
+              return `
+                <div class="order-row">
+                  <span style="font-size:0.85rem;font-weight:bold">${order.orderId}</span>
+                  <span>${order.date}</span>
+                  <div class="item-names">
+                    ${order.items.map(i => `<span class="item-name-tag">${i.name}</span>`).join("")}
+                  </div>
+                  <span>$${order.shipping.toFixed(2)}</span>
+                  <span>$${order.tax.toFixed(2)}</span>
+                  <span>${order.discount ? "$" + order.discount.toFixed(2) : "$0.00"}</span>
+                  <span class="order-total">$${order.total.toFixed(2)}</span>
+                  <div class="status-badge">
+                    <div class="status-icon ${s.cls}">${s.icon}</div>
+                    <span class="status-label">${order.status}</span>
+                  </div>
+                  <button class="btn-detail" onclick="viewDetail('${order.orderId}')">查看詳情</button>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `<div class="loading-text">載入失敗：${err.message}</div>`;
+      }
+    }
+
+    function viewDetail(orderId) {
+      document.getElementById("search-order-input") // 如果在同頁有輸入框則設值
+      localStorage.setItem("queryOrderId", orderId);
+      location.href = `/order_result.html`;
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

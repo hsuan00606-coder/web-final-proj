@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 購物車</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .cart-card {
+      background-color: #fcd5b5;
+      border-radius: 35px;
+      padding: 35px 40px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    }
+
+    /* 商品行 */
+    .cart-item {
+      display: grid;
+      grid-template-columns: 80px 1fr 140px 120px 60px;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .cart-item:last-of-type { border-bottom: none; }
+
+    .cart-item-img {
+      width: 80px;
+      height: 100px;
+      border-radius: 15px;
+      background-color: #f0e0c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      overflow: hidden;
+    }
+
+    .cart-item-img img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 15px;
+    }
+
+    .cart-item-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #2c3e50;
+      cursor: pointer;
+    }
+
+    .cart-item-name:hover { color: #e67e22; }
+
+    /* 數量控制 */
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: white;
+      border-radius: 20px;
+      padding: 6px 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .btn-qty-sm {
+      background-color: #e67e22;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 1rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .qty-num {
+      min-width: 24px;
+      text-align: center;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .cart-item-subtotal {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #e67e22;
+      text-align: right;
+    }
+
+    .btn-remove {
+      background-color: #fcb5b5;
+      color: #c0392b;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-remove:hover { background-color: #e74c3c; color: white; }
+
+    /* 結算列 */
+    .cart-summary {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      gap: 30px;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 2px solid rgba(0,0,0,0.07);
+      flex-wrap: wrap;
+    }
+
+    .summary-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: right;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+      font-size: 0.95rem;
+      color: #2c3e50;
+    }
+
+    .summary-row.total {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #e67e22;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-checkout {
+      background-color: #e67e22;
+      color: white;
+      padding: 16px 40px;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+      white-space: nowrap;
+    }
+
+    .btn-checkout:hover { filter: brightness(1.1); }
+
+    .btn-continue {
+      background-color: #fcd5b5;
+      color: #2c3e50;
+      padding: 16px 30px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+    <div class="cart-card" id="cart-content">
+      <div class="loading-text">載入中...</div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    // 需要登入
+    if (!Auth.isLoggedIn()) {
+      location.href = "/log_in.html";
+    }
+
+    initHeader({ activePage: "cart", showSearch: true });
+
+    function calcSummary(items) {
+      const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
+      const shipping = subtotal >= 500 ? 0 : 60;
+      const total = subtotal + shipping;
+      return { subtotal, shipping, total };
+    }
+
+    function renderCart() {
+      const items = Cart.get();
+      const content = document.getElementById("cart-content");
+
+      if (!items.length) {
+        content.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🛒</div>
+            <p>購物車是空的</p>
+            <button class="btn-pill btn-primary" style="margin-top:20px" onclick="location.href='/index.html'">去逛逛</button>
+          </div>`;
+        return;
+      }
+
+      const { subtotal, shipping, total } = calcSummary(items);
+
+      content.innerHTML = `
+        ${items.map((item, idx) => `
+          <div class="cart-item" id="item-${item.productId}">
+            <div class="cart-item-img">
+              <img src="${item.image}" alt="${item.name}"
+                onerror="this.parentElement.innerHTML='📚'">
+            </div>
+            <div class="cart-item-name" onclick="location.href='/product.html?id=${item.productId}'">${item.name}</div>
+            <div class="qty-control">
+              <button class="btn-qty-sm" onclick="updateQty('${item.productId}', ${item.qty - 1})">−</button>
+              <span class="qty-num">${item.qty}</span>
+              <button class="btn-qty-sm" onclick="updateQty('${item.productId}', ${item.qty + 1})">＋</button>
+            </div>
+            <div class="cart-item-subtotal">$${(item.price * item.qty).toFixed(2)}</div>
+            <button class="btn-remove" onclick="removeItem('${item.productId}')" title="移除">✕</button>
+          </div>
+        `).join("")}
+
+        <div class="cart-summary">
+          <div class="summary-info">
+            <div class="summary-row"><span>小計</span><span>$${subtotal.toFixed(2)}</span></div>
+            <div class="summary-row"><span>運費</span><span>${shipping === 0 ? "免費" : "$" + shipping.toFixed(2)}</span></div>
+            <div class="summary-row total"><span>總計</span><span>$${total.toFixed(2)}</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <button class="btn-checkout" onclick="goCheckout()">進行結帳</button>
+            <button class="btn-continue" onclick="location.href='/index.html'">繼續購物</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateQty(productId, newQty) {
+      Cart.updateQty(productId, newQty); // qty<=0 自動移除
+      const navCart = document.getElementById("nav-cart");
+      if (navCart) {
+        const c = Cart.count();
+        navCart.textContent = c > 0 ? `購物車 (${c})` : "購物車";
+      }
+      renderCart();
+    }
+
+    function removeItem(productId) {
+      Cart.remove(productId);
+      const navCart = document.getElementById("nav-cart");
+      if (navCart) {
+        const c = Cart.count();
+        navCart.textContent = c > 0 ? `購物車 (${c})` : "購物車";
+      }
+      renderCart();
+      showToast("已移除商品");
+    }
+
+    function goCheckout() {
+      if (!Cart.get().length) { showToast("購物車是空的"); return; }
+      location.href = "/checkout.html";
+    }
+
+    renderCart();
+  </script>
+</body>
+</html>

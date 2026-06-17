@@ -1,110 +1,166 @@
 import os
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, File, Form, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 import pymongo
-import chromadb
 import requests
 import bcrypt
+import shutil
+import uuid
+from bson import ObjectId
 
 app = FastAPI(title="歐趴書局 API Backend")
 
-# 1. 控管 HTML 前端網頁的核心配置：掛載靜態檔案路由 (方案 A)
-# 請確保 backend 目錄下有 static 資料夾
-static_dir = os.path.join(os.path.dirname(__file__), "static")
-if not os.path.exists(static_dir):
-    os.makedirs(static_dir)
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
+# ==========================================
+# 1. 靜態檔案與檔案上傳目錄控管 (方案 A)
+# ==========================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+UPLOAD_DIR = os.path.join(STATIC_DIR, "uploads")
 
-# 2. 初始化外部服務連線
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/obooks_db")
-CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+if not os.path.exists(STATIC_DIR): os.makedirs(STATIC_DIR)
+if not os.path.exists(UPLOAD_DIR): os.makedirs(UPLOAD_DIR)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# ==========================================
+# 2. 初始化資料庫與微服務容器連線
+# ==========================================
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/obooks_db")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://ollama-ai:11434")
 
 mongo_client = pymongo.MongoClient(MONGO_URI)
 db = mongo_client.get_database()
 users_collection = db["users"]
 books_collection = db["books"]
+orders_collection = db["orders"] # 新增：訂單集合
 
-# 多輪對話 In-Memory Session 快取字典 (關閉網頁或重啟容器即失效)
 chat_sessions = {}
 
-# 3. Pydantic 資料模型定義
-class RegisterModel(BaseModel):
-    email: EmailStr
+# ==========================================
+# 3. Pydantic 資料型態定義 (對齊前端欄位)
+# ==========================================
+class AuthModel(BaseModel):
+    username: str
     password: str
-    name: str
-
-class LoginModel(BaseModel):
-    email: EmailStr
-    password: str
+    email: str = None
 
 class ChatRequest(BaseModel):
     session_id: str
     message: str
 
-# 4. API 實作
-@app.post("/api/register")
-def register(user: RegisterModel):
-    # 檢查帳號是否存在
-    if users_collection.find_one({"email": user.email}):
-        raise HTTPException(status_code=400, detail="該 Email 已被註冊")
+# ==========================================
+# 4. 會員認證 API 路由 (對齊 common.js 的 /auth)
+# ==========================================
+@app.post("/api/v1/auth/register")
+def register(user: AuthModel):
+    if users_collection.find_one({"username": user.username}):
+        raise HTTPException(status_code=400, detail={"error": "該帳號已被註冊"})
     
-    # 進行安全雜湊加密
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
-    
     new_user = {
+        "username": user.username,
         "email": user.email,
-        "password_hash": hashed_password.decode('utf-8'),
-        "name": user.name
+        "password_hash": hashed_password.decode('utf-8')
     }
     users_collection.insert_one(new_user)
-    
-    # 規格書要求：毫秒級即時跳轉，後端迅速回傳
-    return {"status": "success", "message": "註冊成功"}
+    return {"token": f"bearer-mock-token-{user.username}", "username": user.username}
 
-@app.post("/api/login")
-def login(user: LoginModel):
-    db_user = users_collection.find_one({"email": user.email})
-    if not db_user:
-        raise HTTPException(status_code=401, detail="帳號或密碼錯誤")
+@app.post("/api/v1/auth/login")
+def login(user: AuthModel):
+    db_user = users_collection.find_one({"username": user.username})
+    if not db_user or not bcrypt.checkpw(user.password.encode('utf-8'), db_user["password_hash"].encode('utf-8')):
+        raise HTTPException(status_code=400, detail={"error": "帳號或密碼錯誤"})
     
-    # 驗證雜湊密碼
-    if not bcrypt.checkpw(user.password.encode('utf-8'), db_user["password_hash"].encode('utf-8')):
-        raise HTTPException(status_code=401, detail="帳號或密碼錯誤")
-    
-    return {"status": "success", "user": {"name": db_user["name"], "email": db_user["email"]}}
+    return {"token": f"bearer-mock-token-{user.username}", "username": db_user["username"]}
 
-@app.post("/api/chat")
+# ==========================================
+# 5. 商品 API 路由 (對齊 index.html)
+# ==========================================
+@app.get("/api/v1/products")
+def get_products(q: str = None):
+    query = {}
+    if q:
+        # 模糊搜尋書名
+        query["title"] = {"$regex": q, "$options": "i"}
+    
+    cursor = books_collection.find(query)
+    products = []
+    for b in cursor:
+        products.append({
+            "id": str(b["_id"]),
+            "name": b["title"],
+            "price": b["price"],
+            "author": b.get("author", "未知作者"),
+            "image": b.get("image_url", "/static/uploads/default.jpg"),
+            "rating": b.get("rating", 5)
+        })
+    return products
+
+# ==========================================
+# 6. 訂單核心 API 路由 (對齊 checkout.html 與 orders.html)
+# ==========================================
+@app.post("/api/v1/orders")
+def create_order(order_data: dict):
+    order_id = f"AP-{uuid.uuid4().hex[:8].upper()}"
+    order_data["orderId"] = order_id
+    order_data["date"] = "2026-06-17" # 對齊 Demo 當前時間
+    order_data["status"] = "處理中"
+    order_data["trackingStage"] = 2  # 1:成立, 2:處理中, 3:配送中, 4:已送達
+    order_data["shipping"] = order_data.get("shipping", 60)
+    order_data["tax"] = order_data.get("tax", 0)
+    order_data["total"] = order_data.get("total", 0)
+    
+    orders_collection.insert_one(order_data)
+    # 去除 MongoDB _id
+    order_data.pop("_id", None)
+    return {"order": order_data}
+
+@app.get("/api/v1/orders")
+def get_all_orders():
+    cursor = orders_collection.find({})
+    orders = []
+    for o in cursor:
+        o.pop("_id", None)
+        orders.append(o)
+    return orders
+
+@app.get("/api/v1/orders/{order_id}")
+def get_single_order(order_id: str):
+    order = orders_collection.find_one({"orderId": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail={"error": "找不到訂單"})
+    order.pop("_id", None)
+    return order
+
+# ==========================================
+# 7. AI Agent 智慧助理 API
+# ==========================================
+@app.post("/api/v1/chat")
 def chat_agent(req: ChatRequest):
-    # 初始化或還原 Session
     if req.session_id not in chat_sessions:
-        chat_sessions[req.session_id] = {"history": [], "last_recommended_ids": []}
+        chat_sessions[req.session_id] = {"history": []}
     
     session = chat_sessions[req.session_id]
-    user_message = req.message
     
-    # RAG 工作流模擬（這裡只展示骨架，後續可自行加入 ChromaDB 搜尋與 Llama 3.1 提示詞串接）
-    # 範例引導 Llama 3.1 推理：
+    system_prompt = (
+        "你現在是台灣中原大學『歐趴書局』的智慧二手教科書助理。 "
+        "請全程使用繁體中文回答。請針對使用者的課業問題推薦書籍。"
+    )
+
     try:
         response = requests.post(f"{OLLAMA_HOST}/api/generate", json={
             "model": "llama3.1",
-            "prompt": f"你是一位二手教科書智慧助理，請回答用戶問題：{user_message}",
+            "prompt": f"{system_prompt}\n\n用戶問題：{req.message}\n助理回答：",
             "stream": False
         }, timeout=30)
-        ai_response = response.json().get("response", "AI 暫時無法回應")
+        ai_response = response.json().get("response", "AI 助理暫時無法回應")
     except Exception:
-        ai_response = f"【測試模式】收到您的訊息：'{user_message}'。目前 AI 引擎容器正在背景載入中。"
+        ai_response = f"【測試模式】收到訊息：'{req.message}'。後端通訊正常！"
 
-    # 更新記憶
-    session["history"].append({"user": user_message, "ai": ai_response})
-    
-    return {
-        "reply": ai_response,
-        "last_recommended_ids": session["last_recommended_ids"]
-    }
+    session["history"].append({"user": req.message, "ai": ai_response})
+    return {"reply": ai_response}
 
-# 首頁重定向導流
 @app.get("/")
 def read_root():
-    return {"message": "歡迎來到歐趴書局後端。請訪問 /static/index.html 進入前端網站。"}
+    return {"message": "後端已啟動，請訪問 /static/index.html"}

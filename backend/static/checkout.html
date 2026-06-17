@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 結帳</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 0;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 25px;
+      align-items: start;
+    }
+
+    .section-card {
+      background-color: #fcd5b5;
+      border-radius: 35px;
+      padding: 35px 40px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #2c3e50;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(0,0,0,0.08);
+    }
+
+    /* 表單 */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 20px;
+      font-size: 1rem;
+      outline: none;
+      background-color: white;
+      color: #2c3e50;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      box-shadow: 0 0 0 3px rgba(230,126,34,0.25);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    /* 訂單摘要（右欄） */
+    .order-summary-card {
+      position: sticky;
+      top: 20px;
+    }
+
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .order-item-row:last-of-type { border-bottom: none; }
+
+    .order-item-name {
+      font-size: 0.9rem;
+      color: #2c3e50;
+      flex: 1;
+    }
+
+    .order-item-qty {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+    }
+
+    .order-item-price {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #e67e22;
+      white-space: nowrap;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      margin: 10px 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+      color: #2c3e50;
+      padding: 4px 0;
+    }
+
+    .summary-row.total {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #e67e22;
+      padding-top: 10px;
+      border-top: 2px solid rgba(0,0,0,0.1);
+      margin-top: 6px;
+    }
+
+    /* 提交按鈕 */
+    .btn-submit-order {
+      background-color: #e67e22;
+      color: white;
+      padding: 18px;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(230,126,34,0.3);
+    }
+
+    .btn-submit-order:hover { filter: brightness(1.1); }
+    .btn-submit-order:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-back {
+      background-color: #fcd5b5;
+      color: #2c3e50;
+      padding: 14px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: bold;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* 付款方式選擇 */
+    .payment-tabs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .payment-tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      background-color: white;
+      color: #7f8c8d;
+    }
+
+    .payment-tab.active {
+      background-color: #e67e22;
+      color: white;
+    }
+
+    .payment-fields { display: none; }
+    .payment-fields.show { display: flex; flex-direction: column; gap: 15px; }
+
+    @media (max-width: 900px) {
+      .main-container { grid-template-columns: 1fr; }
+      .order-summary-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container" id="main-content">
+    <div class="loading-text">載入中...</div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    if (!Auth.isLoggedIn()) location.href = "/log_in.html";
+
+    initHeader({ showSearch: false });
+
+    const cartItems = Cart.get();
+    if (!cartItems.length) location.href = "/cart.html";
+
+    const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+    const shipping = subtotal >= 500 ? 0 : 60;
+    const tax      = Math.round(subtotal * 0.05 * 100) / 100;
+    const total    = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+    let payMethod = "credit";
+
+    function render() {
+      document.getElementById("main-content").innerHTML = `
+        <!-- 左欄：配送 + 付款 -->
+        <div style="display:flex;flex-direction:column;gap:25px">
+
+          <!-- 配送資訊 -->
+          <div class="section-card">
+            <div class="section-title">📦 配送資訊</div>
+            <div class="form-group">
+              <label>收件人姓名</label>
+              <input type="text" id="del-name" placeholder="王小明" required>
+            </div>
+            <div class="form-group">
+              <label>聯絡電話</label>
+              <input type="tel" id="del-phone" placeholder="0912345678" required>
+            </div>
+            <div class="form-group">
+              <label>配送地址</label>
+              <input type="text" id="del-address" placeholder="台北市中正區重慶南路一段 100 號" required>
+            </div>
+          </div>
+
+          <!-- 付款資訊 -->
+          <div class="section-card">
+            <div class="section-title">💳 付款方式</div>
+            <div class="payment-tabs">
+              <button class="payment-tab active" id="tab-credit" onclick="switchPayment('credit')">信用卡</button>
+              <button class="payment-tab" id="tab-atm" onclick="switchPayment('atm')">ATM 轉帳</button>
+              <button class="payment-tab" id="tab-cod" onclick="switchPayment('cod')">貨到付款</button>
+            </div>
+
+            <!-- 信用卡欄位 -->
+            <div class="payment-fields show" id="fields-credit">
+              <div class="form-group">
+                <label>卡號</label>
+                <input type="text" id="cc-number" placeholder="**** **** **** 1234" maxlength="19">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>有效期限</label>
+                  <input type="text" id="cc-exp" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="form-group">
+                  <label>CVV</label>
+                  <input type="text" id="cc-cvv" placeholder="***" maxlength="3">
+                </div>
+              </div>
+            </div>
+
+            <!-- ATM 欄位 -->
+            <div class="payment-fields" id="fields-atm">
+              <div class="form-group">
+                <label>銀行代碼</label>
+                <input type="text" id="atm-bank" placeholder="012">
+              </div>
+              <div class="form-group">
+                <label>帳號末五碼</label>
+                <input type="text" id="atm-account" placeholder="12345" maxlength="5">
+              </div>
+            </div>
+
+            <!-- 貨到付款 -->
+            <div class="payment-fields" id="fields-cod">
+              <p style="color:#7f8c8d;font-size:0.95rem;line-height:1.7">
+                選擇貨到付款，商品送達時請備妥現金支付。<br>
+                手續費：$30（已含入總計）
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右欄：訂單摘要 -->
+        <div class="section-card order-summary-card">
+          <div class="section-title">📋 訂單摘要</div>
+
+          ${cartItems.map(i => `
+            <div class="order-item-row">
+              <span class="order-item-name">${i.name}</span>
+              <span class="order-item-qty">x${i.qty}</span>
+              <span class="order-item-price">$${(i.price * i.qty).toFixed(2)}</span>
+            </div>
+          `).join("")}
+
+          <hr class="divider">
+          <div class="summary-row"><span>小計</span><span>$${subtotal.toFixed(2)}</span></div>
+          <div class="summary-row"><span>運費</span><span>${shipping === 0 ? "免費（滿500免運）" : "$" + shipping.toFixed(2)}</span></div>
+          <div class="summary-row"><span>稅金 (5%)</span><span>$${tax.toFixed(2)}</span></div>
+          <div class="summary-row total"><span>總計</span><span>$${total.toFixed(2)}</span></div>
+
+          <button class="btn-submit-order" id="btn-order" onclick="submitOrder()">確認下單</button>
+          <button class="btn-back" onclick="location.href='/cart.html'">← 返回購物車</button>
+        </div>
+      `;
+    }
+
+    function switchPayment(method) {
+      payMethod = method;
+      ["credit", "atm", "cod"].forEach(m => {
+        document.getElementById(`tab-${m}`).classList.toggle("active", m === method);
+        document.getElementById(`fields-${m}`).classList.toggle("show", m === method);
+      });
+    }
+
+    async function submitOrder() {
+      const name    = document.getElementById("del-name").value.trim();
+      const phone   = document.getElementById("del-phone").value.trim();
+      const address = document.getElementById("del-address").value.trim();
+
+      if (!name || !phone || !address) {
+        showToast("❗ 請填寫完整配送資訊"); return;
+      }
+
+      // 付款資訊驗證
+      let paymentData = { method: "" };
+      if (payMethod === "credit") {
+        const num = document.getElementById("cc-number").value.trim();
+        const exp = document.getElementById("cc-exp").value.trim();
+        const cvv = document.getElementById("cc-cvv").value.trim();
+        if (!num || !exp || !cvv) { showToast("❗ 請填寫完整信用卡資訊"); return; }
+        paymentData = { method: "信用卡", last4: num.slice(-4), exp, status: "有款" };
+      } else if (payMethod === "atm") {
+        const bank    = document.getElementById("atm-bank").value.trim();
+        const account = document.getElementById("atm-account").value.trim();
+        if (!bank || !account) { showToast("❗ 請填寫 ATM 資訊"); return; }
+        paymentData = { method: "ATM轉帳", bank, last5: account, status: "有款" };
+      } else {
+        paymentData = { method: "貨到付款", status: "未付款" };
+      }
+
+      const btn = document.getElementById("btn-order");
+      btn.disabled = true;
+      btn.textContent = "處理中...";
+
+      try {
+        const result = await apiFetch("/orders", {
+          method: "POST",
+          body: JSON.stringify({
+            items: cartItems,
+            delivery: { name, phone, address },
+            payment: paymentData,
+          }),
+        });
+
+        // 儲存最新訂單 ID 給結果頁使用
+        localStorage.setItem("lastOrderId", result.order.orderId);
+        Cart.clear();
+        location.href = "/order_result.html";
+
+      } catch (err) {
+        showToast("❗ 下單失敗：" + err.message);
+        btn.disabled = false;
+        btn.textContent = "確認下單";
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

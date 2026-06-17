@@ -1,4 +1,4 @@
-version: '3.8'
+name: obooks-project
 
 services:
   # 1. 後端服務與前端託管

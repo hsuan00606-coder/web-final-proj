@@ -1,0 +1,222 @@
+/* ============================================================
+   歐趴書局 - 共用樣式 (common.css)
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Microsoft JhengHei", -apple-system, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f39c12 0%, #f1c40f 50%, #f39c12 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* ── 導覽列 ── */
+.main-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: -20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  position: relative;
+  z-index: 10;
+}
+
+.banner-top {
+  background-color: #feb1b1;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+  height: 60px;
+  flex-wrap: wrap;
+  z-index: 5;
+  position: relative;
+}
+
+.banner-bottom {
+  background-color: #f5974b;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 25px;
+  height: 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-placeholder {
+  position: relative;
+  top: 35px;
+  z-index: 999;
+  background-color: #e67e22;
+  padding: 18px 30px;
+  border-radius: 30px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-circle {
+  background-color: #fcd5b5;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  top: 35px;
+  margin-left: 15px;
+  z-index: 999;
+  border: none;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.search-container {
+  margin-left: 30px;
+  margin-right: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  width: 280px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+.lang-group {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+  position: relative;
+  z-index: 100;
+}
+
+.user-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ── 按鈕語彙 ── */
+button {
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(0.95);
+}
+
+.btn-rect {
+  background-color: #fcd5b5;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.btn-pill {
+  background-color: #fcd5b5;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.btn-pill.active {
+  background-color: white;
+}
+
+.btn-pill.btn-primary {
+  background-color: #e67e22;
+  color: white;
+}
+
+/* ── 卡片通用 ── */
+.card {
+  background-color: #fcd5b5;
+  border-radius: 35px;
+  padding: 35px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+}
+
+/* ── 星評 ── */
+.stars {
+  color: #f39c12;
+  font-size: 1rem;
+}
+.stars .empty {
+  color: #ddd;
+}
+
+/* ── 空狀態 ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7f8c8d;
+}
+.empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+/* ── Toast 通知 ── */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background-color: #2c3e50;
+  color: white;
+  padding: 14px 30px;
+  border-radius: 25px;
+  font-size: 1rem;
+  z-index: 9999;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 768px) {
+  .search-input { width: 180px; }
+  .user-nav { gap: 8px; }
+  .btn-pill { padding: 8px 14px; font-size: 0.85rem; }
+}

@@ -13,9 +13,10 @@ timeout /t 5 /nobreak > nul
 
 echo 正在將預設會員帳密與初始商品書籍匯入 MongoDB 資料庫...
 :: 將宿主機的 books_init.json 複製到 mongodb 容器內並呼叫 mongoimport
+docker cp users_init.json mongodb:/tmp/users_init.json
 docker cp books_init.json mongodb:/tmp/books_init.json
-docker exec -i mongodb mongoimport --db obooks_db --collection users --file /tmp/books_init.json --jsonArray --outer users
-docker exec -i mongodb mongoimport --db obooks_db --collection books --file /tmp/books_init.json --jsonArray --outer books
+docker exec -i mongodb mongoimport --db obooks_db --collection users --drop --file /tmp/users_init.json --jsonArray
+docker exec -i mongodb mongoimport --db obooks_db --collection books --drop --file /tmp/books_init.json --jsonArray
 
 echo.
 echo [步驟 3/3] 正在初始化 Ollama AI 大語言模型 (llama3.1)...
