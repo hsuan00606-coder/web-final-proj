@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多媒體程式設計期末專案 - 系統規格計畫書 (全容器化架構版)</title>
+    <style>
+        :root {
+            --primary-color: #2980b9;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --bg-color: #f4f6f7;
+            --text-color: #333333;
+            --border-color: #bdc3c7;
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--secondary-color);
+            padding-left: 12px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+        }
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 25px;
+        }
+        p, li {
+            font-size: 16px;
+            text-align: justify;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--secondary-color);
+            color: #ffffff;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        code {
+            background-color: #f1c40f;
+            color: #c0392b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .cmd-box {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border-left: 5px solid var(--primary-color);
+        }
+        .diagram-container {
+            background-color: #f8f9fa;
+            border: 2px dashed #bdc3c7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>「歐趴書局」二手教科書拍賣網 系統規格計畫書</h1>
+    <p style="text-align: center; color: #7f8c8d; font-size: 14px;">部署模式：Docker 全容器化 (Full Containerization) | 資料庫：純 MongoDB 架構</p>
+
+    <h2>一、 專案概述與核心目標</h2>
+    <p>本專案旨在開發一個名為「歐趴書局」的二手教科書智慧拍賣與媒合網站。系統整合現代全端架構與 AI Agent 技術，提供使用者直覺的書籍搜尋、多輪對話智慧推薦、以及完整的二手書上架交易功能。本專案最終採取<b>全容器化（Full Containerization）</b>架構，將所有後端、資料庫與 AI 推理引擎納入 Docker Compose 編排，透過一個自動化腳本即可在具備 NVIDIA GPU 環境的本機端快速完成一鍵部屬，提供流暢的期末實機 Demo 體驗。</p>
+
+    <h2>二、 系統技術棧與版本規範 (Tech Stack)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>元件層級</th>
+                <th>選用技術/套件</th>
+                <th>指定版本</th>
+                <th>容器化角色 / 說明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>網頁前端 (Frontend)</b></td>
+                <td>原生 HTML5 / CSS3 / Vanilla JavaScript</td>
+                <td>W3C Standard</td>
+                <td>由後端 FastAPI 透過 <code>StaticFiles</code> 進行靜態路由託管，精簡架構免跨域。</td>
+            </tr>
+            <tr>
+                <td><b>後端 API (Backend)</b></td>
+                <td>FastAPI (Python)</td>
+                <td>^0.110.0</td>
+                <td>獨立容器 <code>web-backend</code>，負責商業邏輯、RAG 工作流與前端託管。</td>
+            </tr>
+            <tr>
+                <td><b>單一資料庫 (NoSQL)</b></td>
+                <td>MongoDB</td>
+                <td>^7.0</td>
+                <td>獨立容器 <code>mongodb</code>，<b>統一儲存</b>使用者帳戶、書籍元數據及對話紀錄，拒絕混用。</td>
+            </tr>
+            <tr>
+                <td><b>向量資料庫 (VectorDB)</b></td>
+                <td>ChromaDB (Server Mode)</td>
+                <td>^0.5.0</td>
+                <td>獨立容器 <code>chromadb</code>，以伺服器模式運行，專職教科書語意向量檢索。</td>
+            </tr>
+            <tr>
+                <td><b>AI 推理引擎 (LLM)</b></td>
+                <td>Ollama (Llama 3.1)</td>
+                <td>Llama 3.1 (8B)</td>
+                <td>獨立容器 <code>ollama-ai</code>，掛載宿主機 GPU，負責大模型推理與 Embedding。</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>三、 系統架構圖 (System Architecture Diagram)</h2>
+    <p>以下為本專案的 Docker 全容器化 microservices 拓撲結構圖。系統透過 Docker 內部網路（Bridge Network）進行安全通訊，僅對宿主機暴露連接埠 8000 供瀏覽器存取。</p>
+    
+    <div class="diagram-container">
+        
+        <p style="font-size: 13px; color: #7f8c8d; margin-top: 10px;">圖 1：歐趴書局全容器化與單一資料庫通訊架構圖</p>
+    </div>
+
+    <h2>四、 全容器化架構設計細節</h2>
+    <p>為了達成「一鍵自動化部署」，本系統由四個 Docker 容器於同一個虛擬網域中協同運作：</p>
+    <ol>
+        <li><b><code>web-backend</code> 容器：</b> 執行 FastAPI 服務，對外開放 <code>8000</code> 連接埠。瀏覽器訪問 <code>http://localhost:8000/static/index.html</code> 即可讀取網頁。</li>
+        <li><b><code>mongodb</code> 容器：</b> 對內開放 <code>27017</code> 連接埠。掛載 Docker Volume 進行資料持久化。<b>用戶資料（包含經 bcrypt 雜湊之密碼）與商品元數據均儲存於此，利用原生的 ObjectId 進行一對多（1:N）賣家與書籍之關聯。</b></li>
+        <li><b><code>chromadb</code> 容器：</b> 對內開放 <code>8000</code> 連接埠。FastAPI 透過 <code>chromadb.HttpClient(host="chromadb")</code> 連線，避免因多行程鎖定檔案或容器重啟導致資料遺失。</li>
+        <li><b><code>ollama-ai</code> 容器：</b> 對內開放 <code>11434</code> 連接埠。透過 Docker Compose 的 <code>deploy.resources.reservations.devices</code> 機制，<b>強制預留並掛載宿主機的 NVIDIA GPU</b> 以啟動 CUDA 加速。</li>
+    </ol>
+
+    <h2>五、 關鍵功能與核心規格細節</h2>
+    
+    <h3>1. 前端靜態路由託管 (方案 A)</h3>
+    <p>專案目錄結構採取內嵌式靜態資源管理。前端所有頁面（包含 <code>index.html</code>、樣式、腳本）均放置於後端專案目錄下的 <code>static/</code> 資料夾中。FastAPI 啟動時透過以下邏輯掛載：</p>
+    <div class="cmd-box">app.mount("/static", StaticFiles(directory="static"), name="static")</div>
+    <p>此設計可確保前後端服務處於同一個連接埠（Port 8000），徹底消除跨來源資源共用（CORS）的複雜設定，最適合本機快速 Demo。</p>
+
+    <h3>2. 安全認證與預設測試帳密</h3>
+    <p>使用者註冊與登入均採用 <code>bcrypt</code> 進行密碼雜湊加密。為方便評審與老師免去註冊手續直接進行功能展示，系統初始化時會自動在 MongoDB 寫入以下兩組已雜湊的測試帳號：</p>
+    <ul>
+        <li><b>測試買家帳號：</b> <code>buyer@test.edu.tw</code> / 密碼：<code>password123</code></li>
+        <li><b>測試賣家帳號：</b> <code>seller@test.edu.tw</code> / 密碼：<code>password123</code></li>
+    </ul>
+
+    <h3>3. 極致流暢的註冊跳轉體驗</h3>
+    <p>為避免不必要的等待，註冊功能的防呆優化升級為<b>「毫秒級即時跳轉」</b>。後端 API 完成資料校驗與寫入 MongoDB 後，立即回傳成功響應，前端 JavaScript 收到 Response 後不做任何非必要延遲，立刻引導使用者跳轉至登入頁面。</p>
+
+    <h3>4. 輕量化多輪對話 Session 機制</h3>
+    <p>智慧 AI 助理支援多輪對話與商品回溯（記憶前一輪推薦的商品 ID 列表）。為了降低架構開銷，此 Session 暫存於 FastAPI 容器的<b>記憶體（In-Memory Python Dict）</b>中。只要使用者關閉網頁瀏覽器或容器重啟，多輪對話與回溯功能即自動失效清空，此符合本機 Demo 之實作預期。</p>
+
+    <h2>六、 自動化部屬與環境初始化指南 (Automation Script)</h2>
+    <p>本專案提供 Windows 環境專用的自動化部署指令檔 <code>deploy.bat</code>。評審機台只需預先安裝好 <b>Docker Desktop</b>、<b>NVIDIA 驅動程式</b> 以及 <b>NVIDIA Container Toolkit</b>，即可一鍵完成部屬：</p>
+
+    <h3>1. 一鍵啟動指令</h3>
+    <p>雙擊執行專案根目錄下的 <code>deploy.bat</code> 或在終端機輸入：</p>
+    <div class="cmd-box">.\deploy.bat</div>
+
+    <h3>2. 自動化腳本執行流程</h3>
+    <p>指令檔在執行時會依序自動完成以下任務：</p>
+    <ol>
+        <li>執行 <code>docker-compose up -d --build</code>，在背景建立並啟動四個核心服務容器。</li>
+        <li>監聽 <code>mongodb</code> 容器狀態，當資料庫就緒後，自動執行 <code>mongoimport</code> 指令，將專案內的 <code>books.json</code> 初始二手書商品資料與預設測試會員資料倒進資料庫。</li>
+        <li>監聽 <code>ollama-ai</code> 容器狀態，自動在容器內觸發 <code>ollama run llama3.1</code>，從官方線上下載 Llama 3.1 (8B) 模型至容器掛載的 Volume 中，並完成初始化。</li>
+    </ol>
+
+    <h3>3. 驗證部屬成果</h3>
+    <p>當腳本顯示 <code>[SUCCESS] 歐趴書局全容器化環境部屬完成！</code> 後，即可打開瀏覽器訪問以下網址進行 Demo：</p>
+    <div class="cmd-box">http://localhost:8000/static/index.html</div>
+
+    <h2>七、 系統清理與重置 (Reset & Cleanup)</h2>
+    <p>若需要徹底清除快取、重置資料庫或卸載容器，請執行下列指令：</p>
+    <div class="cmd-box">docker-compose down -v</div>
+    <p>加上 <code>-v</code> 參數將會一併刪除 MongoDB 與 ChromaDB 的數據資料夾（Volume），確保下一次執行部署腳本時，系統能以 100% 全乾淨的狀態重新載入 <code>books.json</code>。</p>
+</div>
+
+</body>
+</html>
