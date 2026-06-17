@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 系統啟動操作手冊</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+      color: #2c3e50; line-height: 1.7; background: #fdf6ec;
+      max-width: 900px; margin: 0 auto; padding: 40px 24px 80px;
+    }
+    header.title {
+      background: linear-gradient(135deg, #f5974b, #e67e22);
+      color: #fff; border-radius: 24px; padding: 36px 40px; margin-bottom: 32px;
+      box-shadow: 0 8px 20px rgba(230,126,34,0.25);
+    }
+    header.title h1 { font-size: 1.9rem; margin-bottom: 8px; }
+    header.title p { opacity: 0.95; font-size: 1rem; }
+
+    h2 {
+      font-size: 1.35rem; color: #e67e22; margin: 36px 0 16px;
+      padding-bottom: 8px; border-bottom: 3px solid #fcd5b5;
+    }
+    h3 { font-size: 1.1rem; margin: 20px 0 10px; color: #2c3e50; }
+    p, li { font-size: 0.98rem; }
+    ul, ol { padding-left: 24px; margin: 10px 0; }
+    li { margin-bottom: 6px; }
+
+    .card {
+      background: #fff; border-radius: 18px; padding: 22px 26px; margin-bottom: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 步驟區塊 */
+    .step {
+      background: #fff; border-radius: 18px; padding: 22px 26px 22px 64px;
+      margin-bottom: 16px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .step .num {
+      position: absolute; left: 18px; top: 22px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #e67e22; color: #fff; font-weight: bold;
+      display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+    }
+    .step h3 { margin-top: 2px; }
+
+    code {
+      background: #f0e0c8; color: #b5651d; padding: 2px 7px;
+      border-radius: 6px; font-family: Consolas, monospace; font-size: 0.9rem;
+    }
+    pre {
+      background: #2c3e50; color: #ecf0f1; padding: 16px 18px; border-radius: 12px;
+      overflow-x: auto; margin: 12px 0; font-size: 0.9rem; line-height: 1.6;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; background: #fff; border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #f0e0c8; font-size: 0.92rem; }
+    th { background: #fcd5b5; color: #2c3e50; }
+    tr:last-child td { border-bottom: none; }
+
+    .note {
+      background: #fff8ee; border-left: 5px solid #e67e22;
+      padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.92rem;
+    }
+    .warn {
+      background: #fdeaea; border-left: 5px solid #c0392b;
+      padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.92rem;
+    }
+    a { color: #e67e22; }
+    .toc { background: #fff; border-radius: 18px; padding: 18px 26px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .toc ol { padding-left: 22px; }
+    footer { text-align: center; color: #b5651d; font-size: 0.85rem; margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+  <header class="title">
+    <h1>📚 歐趴書局 — 系統啟動操作手冊</h1>
+    <p>從電腦開機到網站可用的完整步驟（Docker 全容器化環境）</p>
+  </header>
+
+  <!-- 目錄 -->
+  <nav class="toc">
+    <strong>本文件內容</strong>
+    <ol>
+      <li><a href="#intro">系統簡介與架構</a></li>
+      <li><a href="#prereq">前置需求（第一次使用前）</a></li>
+      <li><a href="#startup">開機後啟動步驟</a></li>
+      <li><a href="#urls">網站網址一覽</a></li>
+      <li><a href="#verify">確認系統正常</a></li>
+      <li><a href="#shutdown">關閉系統</a></li>
+      <li><a href="#external">（選用）分享給其他電腦</a></li>
+      <li><a href="#trouble">疑難排解</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1. 系統簡介 -->
+  <h2 id="intro">1. 系統簡介與架構</h2>
+  <div class="card">
+    <p>歐趴書局是一套二手教科書智慧拍賣網，採 Docker 全容器化部署。啟動後會同時運行四個容器：</p>
+    <table>
+      <tr><th>容器名稱</th><th>角色</th><th>連接埠</th></tr>
+      <tr><td><code>web-backend</code></td><td>FastAPI 後端＋前端網頁託管</td><td>8000</td></tr>
+      <tr><td><code>mongodb</code></td><td>資料庫（會員／商品／訂單）</td><td>27017</td></tr>
+      <tr><td><code>chromadb</code></td><td>向量資料庫</td><td>8001</td></tr>
+      <tr><td><code>ollama-ai</code></td><td>AI 大語言模型引擎（llama3.1，需 GPU）</td><td>11434</td></tr>
+    </table>
+    <p>專案資料夾位置：<code>D:\used-textbook-system</code></p>
+  </div>
+
+  <!-- 2. 前置需求 -->
+  <h2 id="prereq">2. 前置需求（僅第一次使用前需確認）</h2>
+  <div class="card">
+    <ul>
+      <li><strong>已安裝 Docker Desktop</strong>（Windows 版）。</li>
+      <li><strong>NVIDIA 顯示卡與驅動</strong>：AI 引擎 <code>ollama-ai</code> 需要 GPU 加速；若無 GPU，AI 對話會自動退回「測試模式」。</li>
+      <li><strong>專案檔案完整</strong>：確認 <code>D:\used-textbook-system</code> 內含 <code>docker-compose.yml</code>、<code>deploy.bat</code>、<code>backend\</code>、<code>books_init.json</code>、<code>users_init.json</code>。</li>
+      <li><strong>網路通暢</strong>：第一次會下載約 4.7GB 的 llama3.1 模型，需數分鐘。</li>
+    </ul>
+  </div>
+
+  <!-- 3. 開機後啟動步驟 -->
+  <h2 id="startup">3. 開機後啟動步驟</h2>
+
+  <div class="step">
+    <div class="num">1</div>
+    <h3>啟動 Docker Desktop</h3>
+    <p>開機後先開啟「Docker Desktop」，等待左下角的鯨魚圖示變為綠色（狀態顯示 <em>Running / Engine running</em>）。容器必須由 Docker 引擎執行，這一步沒就緒後面都無法啟動。</p>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <h3>開啟專案資料夾</h3>
+    <p>用檔案總管進入 <code>D:\used-textbook-system</code>。</p>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <h3>執行一鍵部署腳本</h3>
+    <p>直接<strong>雙擊 <code>deploy.bat</code></strong> 即可。它會自動完成下列三件事：</p>
+    <ul>
+      <li>建置並啟動全部四個容器（<code>docker-compose up -d --build</code>）</li>
+      <li>等待 MongoDB 就緒後，匯入初始會員與商品資料</li>
+      <li>初始化 / 載入 Ollama 的 llama3.1 模型</li>
+    </ul>
+    <p class="note">若想手動執行，可在此資料夾開啟終端機（PowerShell 或 CMD）依序輸入：</p>
+    <pre><code># 1) 建置並背景啟動所有容器
+docker-compose up -d --build
+
+# 2) 等待約 5 秒讓 MongoDB 就緒，再匯入初始資料
+docker cp users_init.json mongodb:/tmp/users_init.json
+docker cp books_init.json mongodb:/tmp/books_init.json
+docker exec -i mongodb mongoimport --db obooks_db --collection users --drop --file /tmp/users_init.json --jsonArray
+docker exec -i mongodb mongoimport --db obooks_db --collection books --drop --file /tmp/books_init.json --jsonArray
+
+# 3) 載入 AI 模型（第一次會下載，較久）
+docker exec -it ollama-ai ollama run llama3.1 "你好"</code></pre>
+    <p class="warn">⚠️ <code>mongoimport</code> 帶有 <code>--drop</code>，會先清空再匯入。重複執行會把資料庫還原成初始狀態（清掉先前新增的商品／訂單）。日常只是重新開機啟動時，<strong>資料已存在則可略過匯入步驟</strong>，直接用步驟 4 的 <code>up -d</code> 即可。</p>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <h3>日常啟動（資料已存在時）</h3>
+    <p>若先前已部署過、只是電腦重開機，資料都還在，<strong>不需要重新匯入</strong>。在專案資料夾開終端機輸入：</p>
+    <pre><code>docker-compose up -d</code></pre>
+    <p>等所有容器狀態變為 <em>Up / running</em> 即可。可用以下指令確認：</p>
+    <pre><code>docker ps</code></pre>
+    <p>應看到 <code>web-backend</code>、<code>mongodb</code>、<code>chromadb</code>、<code>ollama-ai</code> 四個都在運行。</p>
+  </div>
+
+  <div class="step">
+    <div class="num">5</div>
+    <h3>開啟瀏覽器使用網站</h3>
+    <p>打開瀏覽器，輸入首頁網址：</p>
+    <pre><code>http://localhost:8000/static/index.html</code></pre>
+    <p>看到商品列表與左側 AI 助理即代表系統啟動成功。</p>
+  </div>
+
+  <!-- 4. 網址一覽 -->
+  <h2 id="urls">4. 網站網址一覽（本機）</h2>
+  <div class="card">
+    <table>
+      <tr><th>頁面</th><th>網址</th></tr>
+      <tr><td>首頁（商品＋AI 助理）</td><td><code>http://localhost:8000/static/index.html</code></td></tr>
+      <tr><td>會員登入／註冊</td><td><code>http://localhost:8000/log_in.html</code></td></tr>
+      <tr><td>賣家專區（商品管理）</td><td><code>http://localhost:8000/seller.html</code></td></tr>
+      <tr><td>購物車</td><td><code>http://localhost:8000/cart.html</code></td></tr>
+      <tr><td>結帳</td><td><code>http://localhost:8000/checkout.html</code></td></tr>
+      <tr><td>歷史訂單</td><td><code>http://localhost:8000/orders.html</code></td></tr>
+      <tr><td>API 自動文件</td><td><code>http://localhost:8000/docs</code></td></tr>
+    </table>
+    <p class="note">預設測試帳號可於 <code>users_init.json</code> 查看（買家 / 賣家）；密碼為當初建立時設定的雜湊對應值。亦可直接於登入頁「註冊」新帳號。</p>
+  </div>
+
+  <!-- 5. 確認系統正常 -->
+  <h2 id="verify">5. 確認系統正常</h2>
+  <div class="card">
+    <ul>
+      <li>首頁能列出 5 本書且每本都有封面圖片。</li>
+      <li>登入頁可用正確帳密登入；錯誤密碼會顯示「帳號或密碼錯誤」。</li>
+      <li>首頁左側對 AI 助理輸入「<strong>我想找C語言</strong>」，右側會自動篩出 C 語言相關書籍。</li>
+      <li>終端機檢查後端日誌：<code>docker logs web-backend --tail 5</code> 應顯示 <em>Application startup complete</em>。</li>
+    </ul>
+  </div>
+
+  <!-- 6. 關閉系統 -->
+  <h2 id="shutdown">6. 關閉系統</h2>
+  <div class="card">
+    <p>在專案資料夾的終端機輸入：</p>
+    <pre><code># 停止容器（保留資料）
+docker-compose stop
+
+# 或：停止並移除容器（資料仍保留於 volume）
+docker-compose down</code></pre>
+    <p class="warn">⚠️ 加上 <code>-v</code>（<code>docker-compose down -v</code>）會連同資料卷一併刪除，<strong>會清空所有會員、商品與訂單資料</strong>，非必要請勿使用。</p>
+  </div>
+
+  <!-- 7. 外網分享 -->
+  <h2 id="external">7. （選用）分享給其他電腦使用</h2>
+  <div class="card">
+    <p>系統前端已使用相對路徑，可被其他裝置存取。臨時對外分享（免安裝）可用 SSH 反向通道：</p>
+    <pre><code>ssh -o StrictHostKeyChecking=no -R 80:localhost:8000 nokey@localhost.run</code></pre>
+    <p>執行後畫面會印出一組 <code>https://xxxx.lhr.life</code> 的公開網址，其他電腦／手機開此網址即可使用。</p>
+    <p class="note">此通道隨終端機關閉而失效，重開會得到不同網址；本機電腦與容器須持續運行。正式長期使用建議改用具帳號的服務（ngrok、cloudflared）或部署到雲端主機。</p>
+  </div>
+
+  <!-- 8. 疑難排解 -->
+  <h2 id="trouble">8. 疑難排解</h2>
+  <div class="card">
+    <table>
+      <tr><th>症狀</th><th>處理方式</th></tr>
+      <tr><td>網頁打不開 / 連線被拒</td><td>確認 Docker Desktop 已啟動，且 <code>docker ps</code> 看得到 <code>web-backend</code>。</td></tr>
+      <tr><td>商品列表空白</td><td>重新匯入資料：執行步驟 3 的兩條 <code>mongoimport</code> 指令。</td></tr>
+      <tr><td>AI 回覆出現「【測試模式】」</td><td>代表沒連到 Ollama。確認 <code>ollama-ai</code> 容器運行、GPU 可用，並已 <code>ollama run llama3.1</code> 載入模型。</td></tr>
+      <tr><td>埠號被占用（8000/27017…）</td><td>關閉占用該埠的程式，或修改 <code>docker-compose.yml</code> 的對外埠號後重啟。</td></tr>
+      <tr><td>改了程式碼沒生效</td><td>前端（HTML/JS/CSS）重整網頁即可；後端（<code>main.py</code>）需 <code>docker restart web-backend</code>。</td></tr>
+    </table>
+  </div>
+
+  <footer>歐趴書局 系統啟動操作手冊 · 置於專案根目錄 spec.html</footer>
+
+</body>
+</html>
