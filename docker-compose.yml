@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # 1. 後端服務與前端託管
+  web-backend:
+    build: ./backend
+    container_name: web-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/obooks_db
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - OLLAMA_HOST=http://ollama-ai:11434
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - mongodb
+      - chromadb
+      - ollama-ai
+    networks:
+      - app-network
+
+  # 2. NoSQL 資料庫 (使用者資料與商品次元數據統一管理)
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  # 3. 獨立向量資料庫容器
+  chromadb:
+    image: chromadb/chroma:0.5.0
+    container_name: chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma-data:/chroma/data
+    networks:
+      - app-network
+
+  # 4. Ollama AI 引擎 (強制預留並掛載 GPU 加速)
+  ollama-ai:
+    image: ollama/ollama:latest
+    container_name: ollama-ai
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  chroma-data:
+  ollama-data:

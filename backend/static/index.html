@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>歐趴書局 - 二手書智慧拍賣網</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .chat-box { border: 1px solid #ccc; height: 300px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; background: #f9f9f9; }
+        .input-group { display: flex; }
+        .input-group input { flex: 1; padding: 10px; }
+        .input-group button { padding: 10px 20px; }
+        .nav { margin-bottom: 20px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <span id="user-display">訪客身份</span> | 
+        <a href="login.html">登入 / 註冊</a>
+    </div>
+
+    <h1>📚 歐趴書局 - 智慧 AI 助理</h1>
+    
+    <div class="chat-box" id="chat-box">
+        <p><b>AI 助理:</b> 哈囉！我是歐趴書局的智慧課業二手書媒合助理。想找什麼領域的教科書呢？</p>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="請輸入對話訊息，例如：我想找計算機組織...">
+        <button id="send-btn">發送訊息</button>
+    </div>
+
+    <script>
+        // 隨機產生這一次網頁開啟的 Session ID
+        const sessionId = "session_" + Math.random().toString(36).substr(2, 9);
+        
+        // 檢查是否有登入狀態紀錄
+        const user = localStorage.getItem('user');
+        if(user) {
+            document.getElementById('user-display').innerText = "歡迎，" + JSON.parse(user).name;
+        }
+
+        // 綁定發送按鈕控制功能 (Spec 規範的 API 通訊合約)
+        document.getElementById('send-btn').addEventListener('click', async () => {
+            const inputField = document.getElementById('user-input');
+            const message = inputField.value.trim();
+            if(!message) return;
+
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><b>你:</b> ${message}</p>`;
+            inputField.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 發送請求給 FastAPI 後端
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, message: message })
+                });
+                const data = await response.json();
+                
+                chatBox.innerHTML += `<p><b>AI 助理:</b> ${data.reply}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                chatBox.innerHTML += `<p style="color:red;"><b>系統錯誤:</b> 無法連線至後端服務。</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
