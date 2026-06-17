@@ -13,6 +13,7 @@ const I18n = {
       "nav.cart": "購物車",
       "nav.orders": "歷史訂單",
       "nav.orderQuery": "訂單查詢",
+      "nav.seller": "賣家專區",
       "search.placeholder": "關鍵字搜尋框",
       "ai.title": "🤖 AI Agent 智慧課業助理",
       "ai.welcome": "你好！我是中原大學歐趴書局助理。想找什麼必修科目的二手教科書嗎？",
@@ -27,6 +28,7 @@ const I18n = {
       "nav.cart": "Cart",
       "nav.orders": "Orders",
       "nav.orderQuery": "Track Order",
+      "nav.seller": "Seller Center",
       "search.placeholder": "Search keywords",
       "ai.title": "🤖 AI Study Assistant",
       "ai.welcome": "Hi! I'm the O-Pass Bookstore assistant. Which course textbooks are you looking for?",
@@ -41,6 +43,7 @@ const I18n = {
       "nav.cart": "购物车",
       "nav.orders": "历史订单",
       "nav.orderQuery": "订单查询",
+      "nav.seller": "卖家专区",
       "search.placeholder": "关键字搜索框",
       "ai.title": "🤖 AI 智能课业助理",
       "ai.welcome": "你好！我是中原大学欧趴书局助理。想找什么必修科目的二手教科书吗？",
@@ -179,6 +182,7 @@ function buildHeader({ activePage = "", showSearch = false } = {}) {
     { id: "nav-cart", label: cartLabel, page: "cart" },
     { id: "nav-history", label: I18n.t("nav.orders"), page: "orders" },
     { id: "nav-search-order", label: I18n.t("nav.orderQuery"), page: "order_result" },
+    { id: "nav-seller", label: I18n.t("nav.seller"), page: "seller" },
   ];
 
   const navBtns = navItems
@@ -231,7 +235,7 @@ function navClick(page) {
     }
     return;
   }
-  const requireAuth = ["cart", "orders", "order_result"];
+  const requireAuth = ["cart", "orders", "order_result", "seller"];
   if (requireAuth.includes(page) && !Auth.isLoggedIn()) {
     showToast("請先登入會員");
     setTimeout(() => (location.href = "/log_in.html"), 1200);
@@ -242,6 +246,7 @@ function navClick(page) {
     cart: "/cart.html",
     orders: "/orders.html",
     order_result: "/order_result.html",
+    seller: "/seller.html",
   };
   if (map[page]) location.href = map[page];
 }

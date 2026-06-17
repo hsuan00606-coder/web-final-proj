@@ -77,25 +77,127 @@ def login(user: AuthModel):
 # ==========================================
 # 5. 商品 API 路由 (對齊 index.html)
 # ==========================================
+def _serialize_book(b):
+    return {
+        "id": str(b["_id"]),
+        "name": b["title"],
+        "price": b["price"],
+        "author": b.get("author", "未知作者"),
+        "image": b.get("image_url", "/static/uploads/default.jpg"),
+        "rating": b.get("rating", 5),
+        "description": b.get("description", ""),
+        "tags": b.get("tags", []),
+    }
+
+# 自然語言常見贅詞，搜尋前先濾除以萃取真正的關鍵字 (如「我想找C語言」→「C語言」)
+_SEARCH_FILLERS = [
+    "我想找", "我要找", "我想要", "我想買", "我要買", "幫我找", "請幫我找",
+    "有沒有", "有無", "請問", "想找", "我要", "推薦", "介紹",
+    "相關的", "相關", "方面", "的書", "教科書", "課本", "書籍", "的", "書",
+]
+
+def _extract_keyword(q: str) -> str:
+    kw = q.strip()
+    for f in _SEARCH_FILLERS:
+        kw = kw.replace(f, "")
+    return kw.strip()
+
 @app.get("/api/v1/products")
 def get_products(q: str = None):
-    query = {}
-    if q:
-        # 模糊搜尋書名
-        query["title"] = {"$regex": q, "$options": "i"}
-    
-    cursor = books_collection.find(query)
-    products = []
-    for b in cursor:
-        products.append({
-            "id": str(b["_id"]),
-            "name": b["title"],
-            "price": b["price"],
-            "author": b.get("author", "未知作者"),
-            "image": b.get("image_url", "/static/uploads/default.jpg"),
-            "rating": b.get("rating", 5)
-        })
-    return products
+    products = [_serialize_book(b) for b in books_collection.find({})]
+    if not q:
+        return products
+
+    ql = q.lower().strip()
+    kw = _extract_keyword(q).lower()
+
+    def matches(p):
+        hay = " ".join([
+            p["name"], p["author"], p.get("description", ""),
+            " ".join(p.get("tags", [])),
+        ]).lower()
+        # 整句比對 或 萃取關鍵字後比對（支援 AI 對話式查詢）
+        if ql and ql in hay:
+            return True
+        if kw and kw in hay:
+            return True
+        return False
+
+    return [p for p in products if matches(p)]
+
+@app.get("/api/v1/products/{product_id}")
+def get_single_product(product_id: str):
+    try:
+        book = books_collection.find_one({"_id": ObjectId(product_id)})
+    except Exception:
+        book = None
+    if not book:
+        raise HTTPException(status_code=404, detail={"error": "找不到商品"})
+    return _serialize_book(book)
+
+def _save_upload(image: UploadFile) -> str:
+    ext = os.path.splitext(image.filename)[1] or ".jpg"
+    fname = f"{uuid.uuid4().hex}{ext}"
+    with open(os.path.join(UPLOAD_DIR, fname), "wb") as f:
+        shutil.copyfileobj(image.file, f)
+    return f"/static/uploads/{fname}"
+
+@app.post("/api/v1/products")
+def create_product(
+    title: str = Form(...),
+    price: int = Form(...),
+    author: str = Form("未知作者"),
+    description: str = Form(""),
+    tags: str = Form(""),
+    seller_email: str = Form(""),
+    image: UploadFile = File(None),
+):
+    image_url = _save_upload(image) if image else "/static/uploads/default.jpg"
+    doc = {
+        "title": title,
+        "price": price,
+        "author": author,
+        "description": description,
+        "tags": [t.strip() for t in tags.split(",") if t.strip()],
+        "image_url": image_url,
+        "rating": 5,
+        "status": "available",
+        "seller_email": seller_email,
+    }
+    res = books_collection.insert_one(doc)
+    doc["_id"] = res.inserted_id
+    return _serialize_book(doc)
+
+@app.put("/api/v1/products/{product_id}")
+def update_product(
+    product_id: str,
+    title: str = Form(None),
+    price: int = Form(None),
+    author: str = Form(None),
+    description: str = Form(None),
+    tags: str = Form(None),
+    image: UploadFile = File(None),
+):
+    try:
+        oid = ObjectId(product_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail={"error": "找不到商品"})
+    if not books_collection.find_one({"_id": oid}):
+        raise HTTPException(status_code=404, detail={"error": "找不到商品"})
+
+    updates = {}
+    if title is not None: updates["title"] = title
+    if price is not None: updates["price"] = price
+    if author is not None: updates["author"] = author
+    if description is not None: updates["description"] = description
+    if tags is not None:
+        updates["tags"] = [t.strip() for t in tags.split(",") if t.strip()]
+    if image:
+        updates["image_url"] = _save_upload(image)
+
+    if updates:
+        books_collection.update_one({"_id": oid}, {"$set": updates})
+    return _serialize_book(books_collection.find_one({"_id": oid}))
 
 # ==========================================
 # 6. 訂單核心 API 路由 (對齊 checkout.html 與 orders.html)

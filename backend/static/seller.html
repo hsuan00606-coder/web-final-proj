@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 賣家商品管理</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container { flex: 1; padding: 20px 0; display: grid; grid-template-columns: 420px 1fr; gap: 30px; align-items: start; }
+
+    /* 左側：新增 / 編輯表單 */
+    .editor-card { background-color: #fcd5b5; border-radius: 30px; padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); position: sticky; top: 20px; }
+    .editor-card h2 { font-size: 1.3rem; color: #2c3e50; margin-bottom: 18px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 12px 16px; border: none; border-radius: 16px; outline: none; font-size: 0.95rem;
+      background: white; color: #2c3e50; box-sizing: border-box;
+    }
+    .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+    .form-hint { font-size: 0.78rem; color: #b5651d; margin-top: 4px; }
+    .img-preview {
+      width: 100%; aspect-ratio: 3/4; max-height: 240px; object-fit: contain; border-radius: 16px;
+      background: #f0e0c8; margin-top: 8px; display: none;
+    }
+    .editor-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-save { flex: 1; background-color: #e67e22; color: white; padding: 14px; border-radius: 18px; font-weight: bold; font-size: 1rem; }
+    .btn-save:hover { filter: brightness(1.08); }
+    .btn-cancel { background-color: #fff; color: #7f8c8d; padding: 14px 18px; border-radius: 18px; font-weight: bold; display: none; }
+
+    /* 右側：商品清單 */
+    .list-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .list-head h2 { font-size: 1.3rem; color: #2c3e50; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 22px; }
+    .product-card { background: #fff; border-radius: 24px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .product-card-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 16px; background: #f0e0c8; }
+    .product-card-name { font-size: 0.98rem; font-weight: bold; color: #2c3e50; }
+    .product-card-author { font-size: 0.82rem; color: #7f8c8d; }
+    .product-card-price { font-size: 0.95rem; font-weight: bold; color: #e67e22; }
+    .product-card-tags { font-size: 0.75rem; color: #95a5a6; }
+    .btn-edit { background-color: #fcd5b5; color: #2c3e50; padding: 8px; border-radius: 14px; font-size: 0.85rem; font-weight: bold; margin-top: auto; }
+    .btn-edit:hover { background-color: #e67e22; color: #fff; }
+    .loading-text { color: #2c3e50; padding: 40px; }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+    <!-- 編輯 / 新增表單 -->
+    <section class="editor-card">
+      <h2 id="editor-title">➕ 上架新商品</h2>
+      <input type="hidden" id="edit-id">
+      <div class="form-group">
+        <label>書名</label>
+        <input type="text" id="f-title" placeholder="例如：C語言教學手冊">
+      </div>
+      <div class="form-group">
+        <label>作者</label>
+        <input type="text" id="f-author" placeholder="例如：洪維恩">
+      </div>
+      <div class="form-group">
+        <label>定價 (TWD)</label>
+        <input type="number" id="f-price" placeholder="例如：480">
+      </div>
+      <div class="form-group">
+        <label>書籍敘述 / 書況</label>
+        <textarea id="f-description" placeholder="例如：大一程式設計必修，書況良好微筆記"></textarea>
+      </div>
+      <div class="form-group">
+        <label>關鍵字標籤（供 AI 搜尋，以逗號分隔）</label>
+        <input type="text" id="f-tags" placeholder="例如：C語言, 程式設計, 資料結構">
+        <div class="form-hint">買家對 AI 說「我想找C語言」時，會依標籤比對顯示此書</div>
+      </div>
+      <div class="form-group">
+        <label>商品圖片</label>
+        <input type="file" id="f-image" accept="image/*">
+        <img id="img-preview" class="img-preview" alt="預覽">
+      </div>
+      <div class="editor-actions">
+        <button class="btn-save" id="btn-save">確認上架</button>
+        <button class="btn-cancel" id="btn-cancel">取消</button>
+      </div>
+    </section>
+
+    <!-- 既有商品清單 -->
+    <div>
+      <div class="list-head"><h2>📚 我的商品</h2></div>
+      <div id="product-grid" class="product-grid">
+        <div class="loading-text">載入商品中...</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    // 需登入才能管理商品
+    if (!Auth.isLoggedIn()) { location.href = "/log_in.html"; }
+    initHeader({ activePage: "seller", showSearch: false });
+
+    const $ = (id) => document.getElementById(id);
+
+    // 圖片預覽
+    $("f-image").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      const preview = $("img-preview");
+      if (file) { preview.src = URL.createObjectURL(file); preview.style.display = "block"; }
+    });
+
+    function resetForm() {
+      $("edit-id").value = "";
+      ["f-title", "f-author", "f-price", "f-description", "f-tags"].forEach((id) => ($(id).value = ""));
+      $("f-image").value = "";
+      $("img-preview").style.display = "none";
+      $("img-preview").src = "";
+      $("editor-title").textContent = "➕ 上架新商品";
+      $("btn-save").textContent = "確認上架";
+      $("btn-cancel").style.display = "none";
+    }
+
+    $("btn-cancel").addEventListener("click", resetForm);
+
+    async function loadProducts() {
+      try {
+        const products = await apiFetch("/products");
+        const grid = $("product-grid");
+        if (!products.length) { grid.innerHTML = `<div class="loading-text">尚無商品，請於左側新增。</div>`; return; }
+        grid.innerHTML = products.map((p) => `
+          <div class="product-card">
+            <img class="product-card-img" src="${p.image}" alt="${p.name}" onerror="this.style.display='none'">
+            <div class="product-card-name">${p.name}</div>
+            <div class="product-card-author">作者：${p.author}</div>
+            <div class="product-card-price">$ ${p.price}</div>
+            <div class="product-card-tags">🏷️ ${(p.tags || []).join("、") || "（無標籤）"}</div>
+            <button class="btn-edit" onclick='startEdit(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✏️ 編輯</button>
+          </div>
+        `).join("");
+      } catch (err) {
+        $("product-grid").innerHTML = `<div class="loading-text">載入失敗：${err.message}</div>`;
+      }
+    }
+
+    function startEdit(p) {
+      $("edit-id").value = p.id;
+      $("f-title").value = p.name;
+      $("f-author").value = p.author;
+      $("f-price").value = p.price;
+      $("f-description").value = p.description || "";
+      $("f-tags").value = (p.tags || []).join(", ");
+      $("f-image").value = "";
+      const preview = $("img-preview");
+      preview.src = p.image; preview.style.display = "block";
+      $("editor-title").textContent = "✏️ 編輯商品";
+      $("btn-save").textContent = "儲存變更";
+      $("btn-cancel").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    $("btn-save").addEventListener("click", async () => {
+      const id = $("edit-id").value;
+      const title = $("f-title").value.trim();
+      const price = $("f-price").value.trim();
+      if (!title || !price) { showToast("書名與定價為必填"); return; }
+
+      const fd = new FormData();
+      fd.append("title", title);
+      fd.append("price", price);
+      fd.append("author", $("f-author").value.trim() || "未知作者");
+      fd.append("description", $("f-description").value.trim());
+      fd.append("tags", $("f-tags").value.trim());
+      const imageFile = $("f-image").files[0];
+      if (imageFile) fd.append("image", imageFile);
+      if (!id) fd.append("seller_email", Auth.getUsername() || "");
+
+      const btn = $("btn-save");
+      btn.disabled = true; btn.textContent = "處理中...";
+      try {
+        const res = await fetch(API + (id ? `/products/${id}` : "/products"), {
+          method: id ? "PUT" : "POST",
+          body: fd, // multipart，勿手動設定 Content-Type
+        });
+        if (!res.ok) { const e = await res.json(); throw new Error(e.detail?.error || "操作失敗"); }
+        showToast(id ? "✅ 已更新商品" : "✅ 已上架商品");
+        resetForm();
+        loadProducts();
+      } catch (err) {
+        showToast("❌ " + err.message);
+      } finally {
+        btn.disabled = false; btn.textContent = id ? "儲存變更" : "確認上架";
+      }
+    });
+
+    loadProducts();
+  </script>
+</body>
+</html>

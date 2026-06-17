@@ -1,47 +1,57 @@
 [
   {
-    "title": "演算法導論",
-    "author": "Thomas H. Cormen",
-    "price": 600,
+    "title": "C語言教學手冊（第四版）",
+    "author": "洪維恩",
+    "price": 480,
     "status": "available",
     "image_url": "/static/uploads/01.jpg",
     "rating": 5,
+    "description": "循序漸進從頭學好 C 語言基礎，豐富範例展示語法，資料結構基本觀念導入易懂。資工大一程式設計必修。",
+    "tags": ["C語言", "C", "程式設計", "programming", "資料結構"],
     "seller_email": "seller@test.edu.tw"
   },
   {
-    "title": "計算機組織與設計",
-    "author": "David A. Patterson",
-    "price": 450,
+    "title": "Linux快速入門實戰手冊",
+    "author": "施威銘研究室",
+    "price": 420,
     "status": "available",
     "image_url": "/static/uploads/02.jpg",
     "rating": 4,
+    "description": "最全方位的 Linux 入門引導，涵蓋命令列、系統設定、開發環境建置，任何 IT 工作都適用。",
+    "tags": ["Linux", "作業系統", "OS", "命令列", "系統管理"],
     "seller_email": "seller@test.edu.tw"
   },
   {
-    "title": "作業系統概念",
-    "author": "Abraham Silberschatz",
-    "price": 500,
-    "status": "available",
-    "image_url": "/static/uploads/03.jpg",
-    "rating": 5,
-    "seller_email": "seller@test.edu.tw"
-  },
-  {
-    "title": "資料庫系統概論",
-    "author": "Ramez Elmasri",
-    "price": 480,
-    "status": "available",
-    "image_url": "/static/uploads/04.jpg",
-    "rating": 4,
-    "seller_email": "seller@test.edu.tw"
-  },
-  {
-    "title": "計算機網路",
+    "title": "電腦網際網路（第七版 國際版）",
     "author": "James F. Kurose",
     "price": 550,
     "status": "available",
-    "image_url": "/static/uploads/05.jpg",
+    "image_url": "/static/uploads/03.jpg",
     "rating": 5,
+    "description": "Computer Networking: A Top-Down Approach。計算機網路必修經典，附部分內容光碟。",
+    "tags": ["計算機網路", "網路", "network", "計算機網路", "通訊"],
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "AIoT與OpenCV實戰應用（第三版）",
+    "author": "朱克剛",
+    "price": 600,
+    "status": "available",
+    "image_url": "/static/uploads/04.jpg",
+    "rating": 5,
+    "description": "使用 Python 3.x、樹莓派 4B 與 OpenCV 4.x，涵蓋感測元件與物聯網連網技術、機器視覺實作。",
+    "tags": ["OpenCV", "Python", "物聯網", "AIoT", "機器視覺", "樹莓派"],
+    "seller_email": "seller@test.edu.tw"
+  },
+  {
+    "title": "跟著實務學習網頁設計",
+    "author": "蔡文龍",
+    "price": 500,
+    "status": "available",
+    "image_url": "/static/uploads/05.jpg",
+    "rating": 4,
+    "description": "HTML5、CSS、JavaScript、Bootstrap、jQuery、jQuery Mobile 網頁設計，含 ITS HTML&CSS 國際認證模擬試題。",
+    "tags": ["網頁設計", "網頁", "web", "HTML", "CSS", "JavaScript", "前端"],
     "seller_email": "seller@test.edu.tw"
   }
 ]
