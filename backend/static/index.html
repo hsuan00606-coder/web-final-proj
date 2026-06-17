@@ -55,6 +55,10 @@
     }
     .btn-chat-send {
       background-color: #e67e22; color: white; border-radius: 20px; padding: 0 20px; font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    .btn-chat-send:disabled {
+      background-color: #bdc3c7; cursor: not-allowed;
     }
 
     /* 右側商品格線保持原樣 */
@@ -102,13 +106,13 @@
   <main class="main-container">
     
     <section class="ai-agent-card">
-      <div class="ai-card-title">🤖 AI Agent 智慧課業助理</div>
+      <div class="ai-card-title" data-i18n="ai.title">🤖 AI Agent 智慧課業助理</div>
       <div class="chat-history" id="chat-history">
-        <div class="chat-msg ai"><b>AI 助理:</b> 你好！我是中原大學歐趴書局助理。想找什麼必修科目的二手教科書嗎？</div>
+        <div class="chat-msg ai"><b>AI 助理:</b> <span data-i18n="ai.welcome">你好！我是中原大學歐趴書局助理。想找什麼必修科目的二手教科書嗎？</span></div>
       </div>
       <div class="chat-input-group">
-        <input type="text" id="chat-input" placeholder="對話搜尋，如：我想找Linux...">
-        <button class="btn-chat-send" id="btn-chat-send">發送</button>
+        <input type="text" id="chat-input" data-i18n-ph="ai.inputPlaceholder" placeholder="對話搜尋，如：我想找Linux...">
+        <button class="btn-chat-send" id="btn-chat-send" data-i18n="ai.send">發送</button>
       </div>
     </section>
 
@@ -146,6 +150,9 @@
 
     async function handleAiChat() {
       const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('btn-chat-send');
+      // AI 思考中時按鈕已禁用（灰色），直接忽略重複觸發
+      if (sendBtn.disabled) return;
       const msg = input.value.trim();
       if(!msg) return;
 
@@ -154,9 +161,13 @@
       input.value = "";
       history.scrollTop = history.scrollHeight;
 
+      // 禁用輸入與發送鈕（轉灰），避免思考期間重複送出
+      sendBtn.disabled = true;
+      input.disabled = true;
+
       // 顯示思考中佔位訊息
       const thinkingId = 'thinking-' + Date.now();
-      history.innerHTML += `<div class="chat-msg ai" id="${thinkingId}"><b>AI 助理:</b> 思考中...</div>`;
+      history.innerHTML += `<div class="chat-msg ai" id="${thinkingId}"><b>AI 助理:</b> ${I18n.t('ai.thinking')}</div>`;
       history.scrollTop = history.scrollHeight;
 
       try {
@@ -176,6 +187,11 @@
       } catch(err) {
         const el = document.getElementById(thinkingId);
         if (el) el.innerHTML = `<b style="color:red">系統提示:</b> AI 助理連線異常`;
+      } finally {
+        // 回復可用狀態（按鈕轉回橘色），接手下一則訊息
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
       }
     }
 

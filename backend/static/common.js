@@ -3,6 +3,78 @@
    ============================================================ */
 const API = "http://localhost:8000/api/v1";
 
+/* ── 多語系 i18n 工具 ── */
+const I18n = {
+  _key: "lang",
+  dict: {
+    "zh-TW": {
+      brand: "歐趴書局",
+      "nav.login": "會員登入",
+      "nav.cart": "購物車",
+      "nav.orders": "歷史訂單",
+      "nav.orderQuery": "訂單查詢",
+      "search.placeholder": "關鍵字搜尋框",
+      "ai.title": "🤖 AI Agent 智慧課業助理",
+      "ai.welcome": "你好！我是中原大學歐趴書局助理。想找什麼必修科目的二手教科書嗎？",
+      "ai.inputPlaceholder": "對話搜尋，如：我想找Linux...",
+      "ai.send": "發送",
+      "ai.thinking": "思考中...",
+      logout: "確定要登出嗎？",
+    },
+    "en": {
+      brand: "O-Pass Bookstore",
+      "nav.login": "Login",
+      "nav.cart": "Cart",
+      "nav.orders": "Orders",
+      "nav.orderQuery": "Track Order",
+      "search.placeholder": "Search keywords",
+      "ai.title": "🤖 AI Study Assistant",
+      "ai.welcome": "Hi! I'm the O-Pass Bookstore assistant. Which course textbooks are you looking for?",
+      "ai.inputPlaceholder": "Chat to search, e.g. I'm looking for Linux...",
+      "ai.send": "Send",
+      "ai.thinking": "Thinking...",
+      logout: "Are you sure you want to log out?",
+    },
+    "zh-CN": {
+      brand: "欧趴书局",
+      "nav.login": "会员登录",
+      "nav.cart": "购物车",
+      "nav.orders": "历史订单",
+      "nav.orderQuery": "订单查询",
+      "search.placeholder": "关键字搜索框",
+      "ai.title": "🤖 AI 智能课业助理",
+      "ai.welcome": "你好！我是中原大学欧趴书局助理。想找什么必修科目的二手教科书吗？",
+      "ai.inputPlaceholder": "对话搜索，如：我想找Linux...",
+      "ai.send": "发送",
+      "ai.thinking": "思考中...",
+      logout: "确定要登出吗？",
+    },
+  },
+  get: () => localStorage.getItem(I18n._key) || "zh-TW",
+  t: (key) => {
+    const lang = I18n.get();
+    return (I18n.dict[lang] && I18n.dict[lang][key]) || I18n.dict["zh-TW"][key] || key;
+  },
+  set: (lang) => {
+    if (!I18n.dict[lang]) return;
+    localStorage.setItem(I18n._key, lang);
+    // 重建導覽列並套用頁面翻譯
+    const placeholder = document.querySelector(".main-header");
+    if (placeholder) placeholder.outerHTML = buildHeader(I18n._lastOptions || {});
+    Cart.updateBadge();
+    I18n.apply();
+  },
+  // 套用至帶有 data-i18n / data-i18n-ph 屬性的元素
+  apply: () => {
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      el.textContent = I18n.t(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+      el.placeholder = I18n.t(el.getAttribute("data-i18n-ph"));
+    });
+  },
+};
+
 /* ── Auth 工具 ── */
 const Auth = {
   getToken: () => localStorage.getItem("token"),
@@ -97,15 +169,16 @@ function renderStars(rating, max = 5) {
 
 /* ── 導覽列 HTML 產生器 ── */
 function buildHeader({ activePage = "", showSearch = false } = {}) {
+  I18n._lastOptions = { activePage, showSearch };
   const username = Auth.getUsername();
   const cartCount = Cart.count();
-  const cartLabel = cartCount > 0 ? `購物車 (${cartCount})` : "購物車";
+  const cartLabel = I18n.t("nav.cart") + (cartCount > 0 ? ` (${cartCount})` : "");
 
   const navItems = [
-    { id: "nav-login", label: username ? `${username}` : "會員登入", page: "login" },
+    { id: "nav-login", label: username ? `${username}` : I18n.t("nav.login"), page: "login" },
     { id: "nav-cart", label: cartLabel, page: "cart" },
-    { id: "nav-history", label: "歷史訂單", page: "orders" },
-    { id: "nav-search-order", label: "訂單查詢", page: "order_result" },
+    { id: "nav-history", label: I18n.t("nav.orders"), page: "orders" },
+    { id: "nav-search-order", label: I18n.t("nav.orderQuery"), page: "order_result" },
   ];
 
   const navBtns = navItems
@@ -117,20 +190,29 @@ function buildHeader({ activePage = "", showSearch = false } = {}) {
 
   const searchHtml = showSearch
     ? `<div class="search-container">
-        <input type="text" class="search-input" id="search-input" placeholder="關鍵字搜尋框" onkeydown="if(event.key==='Enter')doSearch()">
+        <input type="text" class="search-input" id="search-input" placeholder="${I18n.t("search.placeholder")}" onkeydown="if(event.key==='Enter')doSearch()">
         <button class="search-btn" onclick="doSearch()">🔍</button>
        </div>`
     : "";
 
+  const cur = I18n.get();
+  const langs = [
+    { code: "zh-TW", label: "繁中" },
+    { code: "en", label: "English" },
+    { code: "zh-CN", label: "简体" },
+  ];
+  const langBtns = langs
+    .map((l) => `<button class="btn-rect${cur === l.code ? " active" : ""}" onclick="I18n.set('${l.code}')">${l.label}</button>`)
+    .join("");
+
   return `
     <header class="main-header">
       <div class="banner-top">
-        <a class="logo-placeholder" href="/index.html">歐趴書局</a>
+        <a class="logo-placeholder" href="/index.html">${I18n.t("brand")}</a>
         <button class="btn-circle" onclick="navClick('login')" title="會員">👤</button>
         ${searchHtml}
         <div class="lang-group">
-          <button class="btn-rect">英文</button>
-          <button class="btn-rect">簡體中文</button>
+          ${langBtns}
         </div>
       </div>
       <div class="banner-bottom">
@@ -141,6 +223,14 @@ function buildHeader({ activePage = "", showSearch = false } = {}) {
 
 /* ── 導覽點擊邏輯 ── */
 function navClick(page) {
+  // 已登入時點擊會員按鈕 → 登出
+  if (page === "login" && Auth.isLoggedIn()) {
+    if (confirm(I18n.t("logout"))) {
+      Auth.clear();
+      location.href = "/index.html";
+    }
+    return;
+  }
   const requireAuth = ["cart", "orders", "order_result"];
   if (requireAuth.includes(page) && !Auth.isLoggedIn()) {
     showToast("請先登入會員");
@@ -148,7 +238,7 @@ function navClick(page) {
     return;
   }
   const map = {
-    login: Auth.isLoggedIn() ? null : "/log_in.html",
+    login: "/log_in.html",
     cart: "/cart.html",
     orders: "/orders.html",
     order_result: "/order_result.html",
@@ -171,4 +261,5 @@ function initHeader(options = {}) {
     placeholder.outerHTML = buildHeader(options);
   }
   Cart.updateBadge();
+  I18n.apply();
 }

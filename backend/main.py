@@ -161,6 +161,14 @@ def chat_agent(req: ChatRequest):
     session["history"].append({"user": req.message, "ai": ai_response})
     return {"reply": ai_response}
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return {"message": "後端已啟動，請訪問 /static/index.html"}
+    return RedirectResponse(url="/static/index.html")
+
+# ==========================================
+# 8. 從根路徑提供前端頁面 (讓 /index.html、/log_in.html 等導覽連結可用)
+#    必須掛載在所有 API 路由之後，API 路由才會優先匹配
+# ==========================================
+app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="root")
