@@ -254,6 +254,7 @@ function buildHeader({ activePage = "", showSearch = false } = {}) {
       <div class="banner-top">
         <a class="logo-placeholder" href="/index.html">${I18n.t("brand")}</a>
         <button class="btn-circle" onclick="navClick('login')" title="會員">👤</button>
+        <button class="btn-circle" onclick="location.href='/about.html'" title="關於作者">🧑‍🎓</button>
         ${searchHtml}
         <div class="lang-group">
           ${langBtns}

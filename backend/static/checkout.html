@@ -357,6 +357,7 @@
         const result = await apiFetch("/orders", {
           method: "POST",
           body: JSON.stringify({
+            username: Auth.getUsername(),   // 記錄買家，供評論「已購買」驗證
             items: cartItems,
             delivery: { name, phone, address },
             payment: paymentData,

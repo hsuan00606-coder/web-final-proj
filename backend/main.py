@@ -63,6 +63,12 @@ class ChatRequest(BaseModel):
     session_id: str            # 前端產生的對話識別碼，用來區分不同使用者的歷史
     message: str               # 使用者輸入的訊息
 
+class ReviewModel(BaseModel):
+    """商品評論請求的資料格式。"""
+    username: str              # 撰寫評論的會員
+    rating: int = 5            # 星等 1~5
+    text: str                  # 評論內容
+
 # ==========================================
 # 4. 會員認證 API 路由 (對齊 common.js 的 /auth)
 # ==========================================
@@ -108,6 +114,7 @@ def _serialize_book(b):
         "rating": b.get("rating", 5),
         "description": b.get("description", ""),
         "tags": b.get("tags", []),
+        "reviews": b.get("reviews", []),
     }
 
 # 自然語言常見贅詞，搜尋前先濾除以萃取真正的關鍵字 (如「我想找C語言」→「C語言」)
@@ -234,6 +241,34 @@ def update_product(
         books_collection.update_one({"_id": oid}, {"$set": updates})
     # 回傳更新後的最新資料
     return _serialize_book(books_collection.find_one({"_id": oid}))
+
+@app.post("/api/v1/products/{product_id}/reviews")
+def add_review(product_id: str, review: ReviewModel):
+    """新增商品評論：限「購買過此商品」的會員。"""
+    try:
+        oid = ObjectId(product_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail={"error": "找不到商品"})
+    if not books_collection.find_one({"_id": oid}):
+        raise HTTPException(status_code=404, detail={"error": "找不到商品"})
+
+    # 驗證購買紀錄：該會員須有一筆訂單的商品項目含此 productId
+    purchased = orders_collection.find_one({
+        "username": review.username,
+        "items.productId": product_id,
+    })
+    if not purchased:
+        raise HTTPException(status_code=403, detail={"error": "只有購買過此商品的會員才能撰寫評論"})
+
+    entry = {
+        "username": review.username,
+        "rating": max(1, min(5, review.rating)),   # 限制在 1~5
+        "text": review.text,
+        "date": "2026-06-18",
+    }
+    books_collection.update_one({"_id": oid}, {"$push": {"reviews": entry}})
+    book = books_collection.find_one({"_id": oid})
+    return {"reviews": book.get("reviews", [])}
 
 # ==========================================
 # 6. 訂單核心 API 路由 (對齊 checkout.html 與 orders.html)

@@ -98,10 +98,33 @@
     .search-hint { margin-bottom: 20px; font-size: 1rem; color: #2c3e50; background-color: rgba(255,255,255,0.4); display: inline-block; padding: 8px 20px; border-radius: 20px; }
     .search-hint span { font-weight: bold; color: #e67e22; }
     .loading-text { text-align: center; color: #2c3e50; font-size: 1.1rem; padding: 60px; }
+
+    /* 📢 商品輪播廣告 */
+    .ad-banner {
+      position: relative; height: 220px; border-radius: 28px; overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12); cursor: pointer; background: #fcd5b5;
+    }
+    .ad-slide {
+      position: absolute; inset: 0; display: flex; align-items: center; gap: 35px; padding: 0 55px;
+      opacity: 0; transition: opacity 0.8s ease; background: linear-gradient(120deg, #fff3e0, #fcd5b5);
+    }
+    .ad-slide.active { opacity: 1; }
+    .ad-slide img { height: 170px; aspect-ratio: 3/4; object-fit: cover; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.18); }
+    .ad-text { flex: 1; }
+    .ad-badge { display: inline-block; background: #e67e22; color: #fff; font-size: 0.8rem; padding: 3px 12px; border-radius: 12px; margin-bottom: 10px; }
+    .ad-name { font-size: 1.6rem; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+    .ad-price { font-size: 1.4rem; color: #e67e22; font-weight: bold; }
+    .ad-cta { margin-top: 14px; display: inline-block; background: #e67e22; color: #fff; padding: 8px 22px; border-radius: 18px; font-weight: bold; }
+    .ad-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+    .ad-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.8); }
+    .ad-dot.active { background: #e67e22; }
   </style>
 </head>
 <body>
   <div id="header-placeholder"></div>
+
+  <!-- 📢 商品輪播廣告（每 4 秒換一檔，點擊進入該商品頁） -->
+  <section class="ad-banner" id="ad-banner"></section>
 
   <main class="main-container">
     
@@ -259,6 +282,41 @@
       }
       showToast(`✅ 已加入購物車：${product.name}`);
     }
+
+    // 📢 載入商品輪播廣告：取商品做為廣告，每 4 秒淡入切換，點擊進入商品頁
+    async function loadAds() {
+      try {
+        const products = await apiFetch("/products");
+        if (!products.length) return;
+        const ads = products.slice(0, 5);   // 最多 5 檔
+        const banner = document.getElementById("ad-banner");
+        banner.innerHTML =
+          ads.map((p, i) => `
+            <div class="ad-slide ${i === 0 ? "active" : ""}" onclick="location.href='/product.html?id=${p.id}'">
+              <img src="${p.image}" alt="${p.name}" onerror="this.style.display='none'">
+              <div class="ad-text">
+                <span class="ad-badge">🔥 熱門推薦</span>
+                <div class="ad-name">${p.name}</div>
+                <div class="ad-price">$ ${p.price}</div>
+                <span class="ad-cta">查看商品 →</span>
+              </div>
+            </div>`).join("") +
+          `<div class="ad-dots">${ads.map((_, i) => `<span class="ad-dot ${i === 0 ? "active" : ""}"></span>`).join("")}</div>`;
+
+        // 每 4 秒切換到下一檔
+        if (ads.length > 1) {
+          let idx = 0;
+          setInterval(() => {
+            const slides = banner.querySelectorAll(".ad-slide");
+            const dots = banner.querySelectorAll(".ad-dot");
+            slides[idx].classList.remove("active"); dots[idx].classList.remove("active");
+            idx = (idx + 1) % slides.length;
+            slides[idx].classList.add("active"); dots[idx].classList.add("active");
+          }, 4000);
+        }
+      } catch (e) {}
+    }
+    loadAds();
 
     // 進頁先載入商品（依網址 q 決定全部或搜尋結果）
     loadProducts();

@@ -3,244 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>歐趴書局 - 系統啟動操作手冊</title>
+  <title>歐趴書局 - 系統說明與機測參考文件</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
       color: #2c3e50; line-height: 1.7; background: #fdf6ec;
-      max-width: 900px; margin: 0 auto; padding: 40px 24px 80px;
+      max-width: 960px; margin: 0 auto; padding: 40px 24px 80px;
     }
     header.title {
       background: linear-gradient(135deg, #f5974b, #e67e22);
-      color: #fff; border-radius: 24px; padding: 36px 40px; margin-bottom: 32px;
+      color: #fff; border-radius: 24px; padding: 36px 40px; margin-bottom: 28px;
       box-shadow: 0 8px 20px rgba(230,126,34,0.25);
     }
     header.title h1 { font-size: 1.9rem; margin-bottom: 8px; }
-    header.title p { opacity: 0.95; font-size: 1rem; }
+    header.title p { opacity: 0.95; }
 
-    h2 {
-      font-size: 1.35rem; color: #e67e22; margin: 36px 0 16px;
-      padding-bottom: 8px; border-bottom: 3px solid #fcd5b5;
-    }
+    h2 { font-size: 1.35rem; color: #e67e22; margin: 36px 0 16px; padding-bottom: 8px; border-bottom: 3px solid #fcd5b5; }
     h3 { font-size: 1.1rem; margin: 20px 0 10px; color: #2c3e50; }
-    p, li { font-size: 0.98rem; }
+    p, li, td, th { font-size: 0.95rem; }
     ul, ol { padding-left: 24px; margin: 10px 0; }
     li { margin-bottom: 6px; }
 
-    .card {
-      background: #fff; border-radius: 18px; padding: 22px 26px; margin-bottom: 18px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
+    .card { background: #fff; border-radius: 18px; padding: 22px 26px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .step { background: #fff; border-radius: 18px; padding: 22px 26px 22px 64px; margin-bottom: 16px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .step .num { position: absolute; left: 18px; top: 22px; width: 32px; height: 32px; border-radius: 50%; background: #e67e22; color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-    /* 步驟區塊 */
-    .step {
-      background: #fff; border-radius: 18px; padding: 22px 26px 22px 64px;
-      margin-bottom: 16px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .step .num {
-      position: absolute; left: 18px; top: 22px;
-      width: 32px; height: 32px; border-radius: 50%;
-      background: #e67e22; color: #fff; font-weight: bold;
-      display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
-    }
-    .step h3 { margin-top: 2px; }
-
-    code {
-      background: #f0e0c8; color: #b5651d; padding: 2px 7px;
-      border-radius: 6px; font-family: Consolas, monospace; font-size: 0.9rem;
-    }
-    pre {
-      background: #2c3e50; color: #ecf0f1; padding: 16px 18px; border-radius: 12px;
-      overflow-x: auto; margin: 12px 0; font-size: 0.9rem; line-height: 1.6;
-    }
+    code { background: #f0e0c8; color: #b5651d; padding: 2px 7px; border-radius: 6px; font-family: Consolas, monospace; font-size: 0.88rem; }
+    pre { background: #2c3e50; color: #ecf0f1; padding: 16px 18px; border-radius: 12px; overflow-x: auto; margin: 12px 0; font-size: 0.88rem; line-height: 1.6; }
     pre code { background: none; color: inherit; padding: 0; }
 
     table { width: 100%; border-collapse: collapse; margin: 12px 0; background: #fff; border-radius: 12px; overflow: hidden; }
-    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #f0e0c8; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #f0e0c8; vertical-align: top; }
     th { background: #fcd5b5; color: #2c3e50; }
     tr:last-child td { border-bottom: none; }
+    td.f { white-space: nowrap; font-family: Consolas, monospace; color: #b5651d; }
 
-    .note {
-      background: #fff8ee; border-left: 5px solid #e67e22;
-      padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.92rem;
-    }
-    .warn {
-      background: #fdeaea; border-left: 5px solid #c0392b;
-      padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.92rem;
-    }
+    .note { background: #fff8ee; border-left: 5px solid #e67e22; padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.9rem; }
+    .warn { background: #fdeaea; border-left: 5px solid #c0392b; padding: 12px 18px; border-radius: 0 12px 12px 0; margin: 12px 0; font-size: 0.9rem; }
+    .flow { background: #fff; border: 2px dashed #e67e22; border-radius: 14px; padding: 14px 18px; margin: 12px 0; font-family: Consolas, monospace; font-size: 0.86rem; line-height: 1.9; color: #2c3e50; overflow-x: auto; }
+    .flow b { color: #e67e22; }
     a { color: #e67e22; }
     .toc { background: #fff; border-radius: 18px; padding: 18px 26px; margin-bottom: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     .toc ol { padding-left: 22px; }
+    .tag { display:inline-block; background:#e67e22; color:#fff; font-size:0.72rem; padding:1px 8px; border-radius:10px; margin-left:6px; }
+    .tag.gray { background:#bdc3c7; color:#fff; }
     footer { text-align: center; color: #b5651d; font-size: 0.85rem; margin-top: 40px; }
   </style>
 </head>
 <body>
 
   <header class="title">
-    <h1>📚 歐趴書局 — 系統啟動操作手冊</h1>
-    <p>從電腦開機到網站可用的完整步驟（Docker 全容器化環境）</p>
+    <h1>📚 歐趴書局 — 系統說明與機測參考文件</h1>
+    <p>二手教科書智慧拍賣網（FastAPI + MongoDB + Ollama AI，Docker 全容器化）</p>
   </header>
 
-  <!-- 目錄 -->
   <nav class="toc">
-    <strong>本文件內容</strong>
+    <strong>目錄</strong>
     <ol>
-      <li><a href="#intro">系統簡介與架構</a></li>
-      <li><a href="#prereq">前置需求（第一次使用前）</a></li>
+      <li><a href="#arch">系統架構總覽</a></li>
       <li><a href="#startup">開機後啟動步驟</a></li>
-      <li><a href="#urls">網站網址一覽</a></li>
-      <li><a href="#verify">確認系統正常</a></li>
-      <li><a href="#shutdown">關閉系統</a></li>
-      <li><a href="#external">（選用）分享給其他電腦</a></li>
+      <li><a href="#files">每個檔案的功能說明</a></li>
+      <li><a href="#api">API 路由一覽</a></li>
+      <li><a href="#flow">串接的資料流</a></li>
+      <li><a href="#urls">網址與測試帳號</a></li>
       <li><a href="#trouble">疑難排解</a></li>
     </ol>
   </nav>
 
-  <!-- 1. 系統簡介 -->
-  <h2 id="intro">1. 系統簡介與架構</h2>
+  <!-- 1. 架構 -->
+  <h2 id="arch">1. 系統架構總覽</h2>
   <div class="card">
-    <p>歐趴書局是一套二手教科書智慧拍賣網，採 Docker 全容器化部署。啟動後會同時運行四個容器：</p>
+    <p>系統由四個 Docker 容器組成，前端網頁由後端容器一併託管（前後端同源）：</p>
     <table>
-      <tr><th>容器名稱</th><th>角色</th><th>連接埠</th></tr>
-      <tr><td><code>web-backend</code></td><td>FastAPI 後端＋前端網頁託管</td><td>8000</td></tr>
-      <tr><td><code>mongodb</code></td><td>資料庫（會員／商品／訂單）</td><td>27017</td></tr>
-      <tr><td><code>chromadb</code></td><td>向量資料庫</td><td>8001</td></tr>
-      <tr><td><code>ollama-ai</code></td><td>AI 大語言模型引擎（llama3.1，需 GPU）</td><td>11434</td></tr>
+      <tr><th>容器</th><th>角色</th><th>對外埠</th></tr>
+      <tr><td class="f">web-backend</td><td>FastAPI 後端 + 前端靜態頁面託管</td><td>8000</td></tr>
+      <tr><td class="f">mongodb</td><td>資料庫：會員 / 商品 / 訂單</td><td>27017</td></tr>
+      <tr><td class="f">chromadb</td><td>向量資料庫（預留）</td><td>8001</td></tr>
+      <tr><td class="f">ollama-ai</td><td>AI 大語言模型 llama3.1（需 GPU）</td><td>11434</td></tr>
     </table>
-    <p>專案資料夾位置：<code>D:\used-textbook-system</code></p>
+    <div class="flow">
+[ 瀏覽器 HTML/JS ] → <b>common.js (apiFetch)</b> → [ <b>web-backend</b> FastAPI main.py ]
+      ├─→ [ mongodb ]  使用者 / 商品 / 訂單資料
+      └─→ [ ollama-ai ] AI 對話生成
+    </div>
   </div>
 
-  <!-- 2. 前置需求 -->
-  <h2 id="prereq">2. 前置需求（僅第一次使用前需確認）</h2>
+  <!-- 2. 啟動 -->
+  <h2 id="startup">2. 開機後啟動步驟</h2>
+  <div class="step"><div class="num">1</div><h3>啟動 Docker Desktop</h3><p>等待左下角鯨魚圖示變綠（Engine running）。</p></div>
+  <div class="step"><div class="num">2</div><h3>用 PowerShell 啟動本機端</h3>
+    <p>在專案資料夾以 PowerShell 執行（取代有編碼問題的 deploy.bat）：</p>
+    <pre><code>powershell -ExecutionPolicy Bypass -File D:\used-textbook-system\deploy.ps1</code></pre>
+    <p>它會：建置並啟動容器 → 匯入初始資料（會員、5 本書）→ 暖機 llama3.1。</p>
+    <p class="note">若先前已部署過、資料還在，只是重開機：直接 <code>docker-compose up -d</code> 即可，不必重新匯入。</p>
+  </div>
+  <div class="step"><div class="num">3</div><h3>開啟網站</h3><pre><code>http://localhost:8000/static/index.html</code></pre></div>
+  <div class="step"><div class="num">4</div><h3>（選用）取得外網網址</h3>
+    <pre><code>powershell -ExecutionPolicy Bypass -File D:\used-textbook-system\geturl.ps1</code></pre>
+    <p>會輸出一行 <code>https://xxxx.lhr.life/static/index.html</code> 供其他電腦訪問。</p>
+  </div>
+
+  <!-- 3. 檔案功能 -->
+  <h2 id="files">3. 每個檔案的功能說明</h2>
+
+  <h3>後端 backend/</h3>
+  <div class="card"><table>
+    <tr><th>檔案</th><th>功能</th></tr>
+    <tr><td class="f">main.py</td><td>FastAPI 後端核心，定義所有 API（會員認證、商品 CRUD 與搜尋、訂單、AI 對話），並託管前端靜態頁與商品圖片。連線 MongoDB 與 Ollama。</td></tr>
+    <tr><td class="f">requirements.txt</td><td>Python 套件依賴清單（fastapi、uvicorn、pymongo、bcrypt、python-multipart、pydantic、requests）。</td></tr>
+    <tr><td class="f">Dockerfile</td><td>後端映像檔建置流程（安裝套件、複製程式、以 uvicorn 啟動）。</td></tr>
+    <tr><td class="f">static/uploads/</td><td>商品圖片存放處（01~05.jpg 為初始書封，賣家上傳的圖也存在此）。</td></tr>
+  </table></div>
+
+  <h3>前端共用 backend/static/</h3>
+  <div class="card"><table>
+    <tr><th>檔案</th><th>功能</th></tr>
+    <tr><td class="f">common.js</td><td>所有頁面共用的 JS：API 基底路徑、<code>apiFetch</code> 請求工具、<code>Auth</code> 登入狀態、<code>Cart</code> 購物車（localStorage）、<code>I18n</code> 三語系、共用導覽列產生器。</td></tr>
+    <tr><td class="f">common.css</td><td>全站共用樣式（橘色主題、導覽列、按鈕、卡片等）。</td></tr>
+  </table></div>
+
+  <h3>前端頁面 backend/static/</h3>
+  <div class="card"><table>
+    <tr><th>頁面</th><th>功能</th></tr>
+    <tr><td class="f">index.html</td><td>首頁：商品列表 + 左側 AI 助理對話。可關鍵字搜尋；對 AI 輸入「我想找C語言」會連動篩選右側商品。</td></tr>
+    <tr><td class="f">product.html</td><td>商品詳情頁：大圖、價格、數量、規格/目錄/評論分頁、加入購物車、立即購買；最下方「你可能也喜歡」每 4 秒輪播。</td></tr>
+    <tr><td class="f">seller.html</td><td>賣家專區：新增 / 編輯商品（書名、作者、定價、敘述、標籤、上傳圖片含預覽）。需登入。</td></tr>
+    <tr><td class="f">cart.html</td><td>購物車：列出商品、調整數量、移除、計算小計與運費，前往結帳。需登入。</td></tr>
+    <tr><td class="f">checkout.html</td><td>結帳：填配送與付款資訊，計算總計（小計+運費+稅務）並送出訂單。需登入。</td></tr>
+    <tr><td class="f">order_result.html</td><td>訂單結果 / 查詢：顯示訂單明細、金額、物流進度條；可輸入訂單編號查詢。</td></tr>
+    <tr><td class="f">orders.html</td><td>歷史訂單：列出所有訂單與狀態，可查看詳情。需登入。</td></tr>
+    <tr><td class="f">log_in.html</td><td>會員登入 / 註冊（實際使用，對應 /api/v1/auth/*）。<span class="tag">使用中</span></td></tr>
+    <tr><td class="f">about.html</td><td>關於作者：作者資訊與專案心得（由導覽列 🧑‍🎓 icon 進入）。</td></tr>
+    <tr><td class="f">login.html</td><td>舊版登入頁，呼叫不存在的端點，未使用。<span class="tag gray">未使用</span></td></tr>
+    <tr><td class="f">upload.html</td><td>舊版上架頁，未使用（已由 seller.html 取代）。<span class="tag gray">未使用</span></td></tr>
+  </table></div>
+
+  <h3>根目錄</h3>
+  <div class="card"><table>
+    <tr><th>檔案</th><th>功能</th></tr>
+    <tr><td class="f">docker-compose.yml</td><td>四個容器的編排設定（映像、埠、網路、資料卷、GPU）。</td></tr>
+    <tr><td class="f">deploy.ps1</td><td>PowerShell 本機啟動腳本（建置、啟動、匯入資料、暖機 AI）。</td></tr>
+    <tr><td class="f">deploy.bat</td><td>舊版啟動腳本，有中文編碼問題，建議改用 deploy.ps1。<span class="tag gray">不建議</span></td></tr>
+    <tr><td class="f">geturl.ps1</td><td>建立外網通道並輸出一行外網網址（可重用既有通道）。</td></tr>
+    <tr><td class="f">books_init.json</td><td>初始商品資料（5 本書，含書名、作者、價格、圖片、標籤、敘述）。</td></tr>
+    <tr><td class="f">users_init.json</td><td>初始測試會員資料（密碼為 bcrypt 雜湊）。</td></tr>
+    <tr><td class="f">spec.html</td><td>本說明文件。</td></tr>
+  </table></div>
+
+  <!-- 4. API -->
+  <h2 id="api">4. API 路由一覽</h2>
+  <div class="card"><table>
+    <tr><th>方法</th><th>路徑</th><th>功能</th><th>資料來源</th></tr>
+    <tr><td>POST</td><td class="f">/api/v1/auth/register</td><td>註冊會員（bcrypt 雜湊密碼）</td><td>users</td></tr>
+    <tr><td>POST</td><td class="f">/api/v1/auth/login</td><td>登入驗證，回傳 token</td><td>users</td></tr>
+    <tr><td>GET</td><td class="f">/api/v1/products</td><td>商品列表 / 關鍵字搜尋（可帶 ?q=）</td><td>books</td></tr>
+    <tr><td>GET</td><td class="f">/api/v1/products/{id}</td><td>單一商品詳情</td><td>books</td></tr>
+    <tr><td>POST</td><td class="f">/api/v1/products</td><td>新增商品（multipart 含圖片）</td><td>books</td></tr>
+    <tr><td>PUT</td><td class="f">/api/v1/products/{id}</td><td>編輯商品（multipart）</td><td>books</td></tr>
+    <tr><td>POST</td><td class="f">/api/v1/orders</td><td>建立訂單</td><td>orders</td></tr>
+    <tr><td>GET</td><td class="f">/api/v1/orders</td><td>所有訂單</td><td>orders</td></tr>
+    <tr><td>GET</td><td class="f">/api/v1/orders/{id}</td><td>單一訂單查詢</td><td>orders</td></tr>
+    <tr><td>POST</td><td class="f">/api/v1/chat</td><td>AI 對話</td><td>ollama-ai</td></tr>
+  </table></div>
+
+  <!-- 5. 資料流 -->
+  <h2 id="flow">5. 串接的資料流</h2>
+
   <div class="card">
-    <ul>
-      <li><strong>已安裝 Docker Desktop</strong>（Windows 版）。</li>
-      <li><strong>NVIDIA 顯示卡與驅動</strong>：AI 引擎 <code>ollama-ai</code> 需要 GPU 加速；若無 GPU，AI 對話會自動退回「測試模式」。</li>
-      <li><strong>專案檔案完整</strong>：確認 <code>D:\used-textbook-system</code> 內含 <code>docker-compose.yml</code>、<code>deploy.bat</code>、<code>backend\</code>、<code>books_init.json</code>、<code>users_init.json</code>。</li>
-      <li><strong>網路通暢</strong>：第一次會下載約 4.7GB 的 llama3.1 模型，需數分鐘。</li>
-    </ul>
+    <h3>① 會員登入 / 註冊</h3>
+    <div class="flow">
+log_in.html（輸入帳密）
+  → common.js <b>apiFetch</b> → <b>POST /api/v1/auth/login</b>
+  → main.py 比對 <b>users</b> 集合（bcrypt 驗證密碼）
+  → 回傳 token → 前端存入 <b>localStorage</b>（Auth.save）
+    </div>
   </div>
 
-  <!-- 3. 開機後啟動步驟 -->
-  <h2 id="startup">3. 開機後啟動步驟</h2>
-
-  <div class="step">
-    <div class="num">1</div>
-    <h3>啟動 Docker Desktop</h3>
-    <p>開機後先開啟「Docker Desktop」，等待左下角的鯨魚圖示變為綠色（狀態顯示 <em>Running / Engine running</em>）。容器必須由 Docker 引擎執行，這一步沒就緒後面都無法啟動。</p>
+  <div class="card">
+    <h3>② 商品瀏覽與搜尋</h3>
+    <div class="flow">
+index.html loadProducts()
+  → <b>GET /api/v1/products?q=關鍵字</b>
+  → main.py 萃取關鍵字（去除「我想找/推薦…」贅詞）
+  → 比對 <b>books</b> 的書名/作者/敘述/標籤
+  → 回傳商品陣列 → 前端渲染商品卡片
+    </div>
   </div>
 
-  <div class="step">
-    <div class="num">2</div>
-    <h3>開啟專案資料夾</h3>
-    <p>用檔案總管進入 <code>D:\used-textbook-system</code>。</p>
+  <div class="card">
+    <h3>③ AI 助理對話（連動商品）</h3>
+    <div class="flow">
+index.html handleAiChat()
+  → <b>POST /api/v1/chat</b> { session_id, message }
+  → main.py 帶 system prompt → <b>ollama-ai</b> llama3.1 生成回覆
+  → 回傳 reply → 顯示於對話框
+  → 同時以使用者訊息呼叫 loadProducts(msg) <b>連動篩選右側商品</b>
+    </div>
+    <p class="note">若 Ollama 連線失敗或逾時，後端自動回「測試模式」訊息，確保前端不中斷。</p>
   </div>
 
-  <div class="step">
-    <div class="num">3</div>
-    <h3>執行一鍵部署腳本</h3>
-    <p>直接<strong>雙擊 <code>deploy.bat</code></strong> 即可。它會自動完成下列三件事：</p>
-    <ul>
-      <li>建置並啟動全部四個容器（<code>docker-compose up -d --build</code>）</li>
-      <li>等待 MongoDB 就緒後，匯入初始會員與商品資料</li>
-      <li>初始化 / 載入 Ollama 的 llama3.1 模型</li>
-    </ul>
-    <p class="note">若想手動執行，可在此資料夾開啟終端機（PowerShell 或 CMD）依序輸入：</p>
-    <pre><code># 1) 建置並背景啟動所有容器
-docker-compose up -d --build
-
-# 2) 等待約 5 秒讓 MongoDB 就緒，再匯入初始資料
-docker cp users_init.json mongodb:/tmp/users_init.json
-docker cp books_init.json mongodb:/tmp/books_init.json
-docker exec -i mongodb mongoimport --db obooks_db --collection users --drop --file /tmp/users_init.json --jsonArray
-docker exec -i mongodb mongoimport --db obooks_db --collection books --drop --file /tmp/books_init.json --jsonArray
-
-# 3) 載入 AI 模型（第一次會下載，較久）
-docker exec -it ollama-ai ollama run llama3.1 "你好"</code></pre>
-    <p class="warn">⚠️ <code>mongoimport</code> 帶有 <code>--drop</code>，會先清空再匯入。重複執行會把資料庫還原成初始狀態（清掉先前新增的商品／訂單）。日常只是重新開機啟動時，<strong>資料已存在則可略過匯入步驟</strong>，直接用步驟 4 的 <code>up -d</code> 即可。</p>
+  <div class="card">
+    <h3>④ 賣家新增 / 編輯商品</h3>
+    <div class="flow">
+seller.html（表單 + 圖片）→ FormData（multipart）
+  → <b>POST /api/v1/products</b> 或 <b>PUT /api/v1/products/{id}</b>
+  → main.py 儲存圖片到 <b>static/uploads/</b>，寫入 / 更新 <b>books</b> 集合
+  → 回傳商品 → 列表即時刷新（買家端搜尋即可找到）
+    </div>
   </div>
 
-  <div class="step">
-    <div class="num">4</div>
-    <h3>日常啟動（資料已存在時）</h3>
-    <p>若先前已部署過、只是電腦重開機，資料都還在，<strong>不需要重新匯入</strong>。在專案資料夾開終端機輸入：</p>
-    <pre><code>docker-compose up -d</code></pre>
-    <p>等所有容器狀態變為 <em>Up / running</em> 即可。可用以下指令確認：</p>
-    <pre><code>docker ps</code></pre>
-    <p>應看到 <code>web-backend</code>、<code>mongodb</code>、<code>chromadb</code>、<code>ollama-ai</code> 四個都在運行。</p>
+  <div class="card">
+    <h3>⑤ 購物車 → 結帳 → 訂單</h3>
+    <div class="flow">
+加入購物車（index/product）→ <b>Cart</b> 存於 localStorage（純前端）
+  → cart.html 檢視 / 調整數量
+  → checkout.html 計算 <b>總計 = 小計 + 運費 + 稅務</b>
+  → <b>POST /api/v1/orders</b>（帶 items/配送/付款/金額）
+  → main.py 產生訂單編號、寫入 <b>orders</b> 集合
+  → 清空購物車 → 導向 order_result.html
+  → <b>GET /api/v1/orders/{id}</b> 顯示訂單明細與物流進度
+    </div>
   </div>
 
-  <div class="step">
-    <div class="num">5</div>
-    <h3>開啟瀏覽器使用網站</h3>
-    <p>打開瀏覽器，輸入首頁網址：</p>
-    <pre><code>http://localhost:8000/static/index.html</code></pre>
-    <p>看到商品列表與左側 AI 助理即代表系統啟動成功。</p>
-  </div>
-
-  <!-- 4. 網址一覽 -->
-  <h2 id="urls">4. 網站網址一覽（本機）</h2>
+  <!-- 6. 網址與帳號 -->
+  <h2 id="urls">6. 網址與測試帳號</h2>
   <div class="card">
     <table>
       <tr><th>頁面</th><th>網址</th></tr>
-      <tr><td>首頁（商品＋AI 助理）</td><td><code>http://localhost:8000/static/index.html</code></td></tr>
-      <tr><td>會員登入／註冊</td><td><code>http://localhost:8000/log_in.html</code></td></tr>
-      <tr><td>賣家專區（商品管理）</td><td><code>http://localhost:8000/seller.html</code></td></tr>
-      <tr><td>購物車</td><td><code>http://localhost:8000/cart.html</code></td></tr>
-      <tr><td>結帳</td><td><code>http://localhost:8000/checkout.html</code></td></tr>
-      <tr><td>歷史訂單</td><td><code>http://localhost:8000/orders.html</code></td></tr>
-      <tr><td>API 自動文件</td><td><code>http://localhost:8000/docs</code></td></tr>
+      <tr><td>首頁</td><td class="f">http://localhost:8000/static/index.html</td></tr>
+      <tr><td>登入</td><td class="f">http://localhost:8000/log_in.html</td></tr>
+      <tr><td>賣家專區</td><td class="f">http://localhost:8000/seller.html</td></tr>
+      <tr><td>API 自動文件</td><td class="f">http://localhost:8000/docs</td></tr>
     </table>
-    <p class="note">預設測試帳號可於 <code>users_init.json</code> 查看（買家 / 賣家）；密碼為當初建立時設定的雜湊對應值。亦可直接於登入頁「註冊」新帳號。</p>
+    <p class="note">測試帳號見 <code>users_init.json</code>（買家 / 賣家）；亦可於登入頁直接註冊新帳號。商品瀏覽與 AI 對話免登入；購物車、結帳、訂單、賣家專區需登入。</p>
   </div>
 
-  <!-- 5. 確認系統正常 -->
-  <h2 id="verify">5. 確認系統正常</h2>
-  <div class="card">
-    <ul>
-      <li>首頁能列出 5 本書且每本都有封面圖片。</li>
-      <li>登入頁可用正確帳密登入；錯誤密碼會顯示「帳號或密碼錯誤」。</li>
-      <li>首頁左側對 AI 助理輸入「<strong>我想找C語言</strong>」，右側會自動篩出 C 語言相關書籍。</li>
-      <li>終端機檢查後端日誌：<code>docker logs web-backend --tail 5</code> 應顯示 <em>Application startup complete</em>。</li>
-    </ul>
-  </div>
+  <!-- 7. 疑難排解 -->
+  <h2 id="trouble">7. 疑難排解</h2>
+  <div class="card"><table>
+    <tr><th>症狀</th><th>處理</th></tr>
+    <tr><td>網頁打不開</td><td>確認 Docker Desktop 已啟動，<code>docker ps</code> 看得到 web-backend。</td></tr>
+    <tr><td>商品列表空白</td><td>重新匯入：重跑 deploy.ps1 的匯入步驟。</td></tr>
+    <tr><td>AI 回覆出現「【測試模式】」</td><td>未連到 Ollama；確認 ollama-ai 運行、GPU 可用、已載入 llama3.1。</td></tr>
+    <tr><td>改了程式沒生效</td><td>前端（HTML/JS/CSS）按 Ctrl+F5 強制重整；後端（main.py）需 <code>docker restart web-backend</code>。</td></tr>
+    <tr><td>導覽列新 icon 沒出現</td><td>瀏覽器快取了舊 common.js，按 Ctrl+F5。</td></tr>
+  </table></div>
 
-  <!-- 6. 關閉系統 -->
-  <h2 id="shutdown">6. 關閉系統</h2>
-  <div class="card">
-    <p>在專案資料夾的終端機輸入：</p>
-    <pre><code># 停止容器（保留資料）
-docker-compose stop
-
-# 或：停止並移除容器（資料仍保留於 volume）
-docker-compose down</code></pre>
-    <p class="warn">⚠️ 加上 <code>-v</code>（<code>docker-compose down -v</code>）會連同資料卷一併刪除，<strong>會清空所有會員、商品與訂單資料</strong>，非必要請勿使用。</p>
-  </div>
-
-  <!-- 7. 外網分享 -->
-  <h2 id="external">7. （選用）分享給其他電腦使用</h2>
-  <div class="card">
-    <p>系統前端已使用相對路徑，可被其他裝置存取。臨時對外分享（免安裝）可用 SSH 反向通道：</p>
-    <pre><code>ssh -o StrictHostKeyChecking=no -R 80:localhost:8000 nokey@localhost.run</code></pre>
-    <p>執行後畫面會印出一組 <code>https://xxxx.lhr.life</code> 的公開網址，其他電腦／手機開此網址即可使用。</p>
-    <p class="note">此通道隨終端機關閉而失效，重開會得到不同網址；本機電腦與容器須持續運行。正式長期使用建議改用具帳號的服務（ngrok、cloudflared）或部署到雲端主機。</p>
-  </div>
-
-  <!-- 8. 疑難排解 -->
-  <h2 id="trouble">8. 疑難排解</h2>
-  <div class="card">
-    <table>
-      <tr><th>症狀</th><th>處理方式</th></tr>
-      <tr><td>網頁打不開 / 連線被拒</td><td>確認 Docker Desktop 已啟動，且 <code>docker ps</code> 看得到 <code>web-backend</code>。</td></tr>
-      <tr><td>商品列表空白</td><td>重新匯入資料：執行步驟 3 的兩條 <code>mongoimport</code> 指令。</td></tr>
-      <tr><td>AI 回覆出現「【測試模式】」</td><td>代表沒連到 Ollama。確認 <code>ollama-ai</code> 容器運行、GPU 可用，並已 <code>ollama run llama3.1</code> 載入模型。</td></tr>
-      <tr><td>埠號被占用（8000/27017…）</td><td>關閉占用該埠的程式，或修改 <code>docker-compose.yml</code> 的對外埠號後重啟。</td></tr>
-      <tr><td>改了程式碼沒生效</td><td>前端（HTML/JS/CSS）重整網頁即可；後端（<code>main.py</code>）需 <code>docker restart web-backend</code>。</td></tr>
-    </table>
-  </div>
-
-  <footer>歐趴書局 系統啟動操作手冊 · 置於專案根目錄 spec.html</footer>
+  <footer>歐趴書局 系統說明與機測參考文件 · 置於專案根目錄 spec.html</footer>
 
 </body>
 </html>

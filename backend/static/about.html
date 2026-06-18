@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 關於作者</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container { flex: 1; padding: 30px 0; display: flex; flex-direction: column; gap: 25px; align-items: center; }
+
+    /* 兩個長方形區塊，沿用網站橘色卡片風格 */
+    .about-block {
+      width: 100%; max-width: 760px;
+      background: #fff; border-radius: 30px; padding: 30px 36px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    /* 第一塊：個人資訊（橘底強調） */
+    .about-block.identity {
+      background: #fcd5b5; text-align: center;
+    }
+    .about-block.identity .who {
+      font-size: 1.5rem; font-weight: bold; color: #2c3e50; letter-spacing: 2px;
+    }
+
+    .about-block .block-title {
+      font-size: 1.2rem; font-weight: bold; color: #e67e22; margin-bottom: 14px;
+    }
+    .about-block .block-text {
+      font-size: 1rem; line-height: 2; color: #2c3e50; text-align: justify;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+
+    <!-- 區塊一：個人資訊 -->
+    <section class="about-block identity">
+      <div class="who">資訊四乙　11127242　楊立璿</div>
+    </section>
+
+    <!-- 區塊二：專案心得 -->
+    <section class="about-block">
+      <div class="block-title">心得</div>
+      <div class="block-text">
+        從此次專案我學習到很多上課以外的知識。我們的系統因為導入 AI agent 功能而要去學習如何用 AI 模型，以及如何評估該使用線上模型還是下載本地模型就足夠應付。因為有課而沒有跟到助教的課守，因此我也去學習網頁後端要有哪些基礎功能，比如要如何存使用者帳號與密碼、商品的資訊要用哪種檔案型別儲存，決定完檔案型別再決定要用哪種資料庫管理系統，是不是要合併已有的資料到同一個資料庫還是分開到不同的資料庫。這些課外的學習實作過程與知識都是很寶貴的經驗。
+      </div>
+    </section>
+
+    <!-- 區塊三：第二位作者資訊 -->
+    <section class="about-block identity">
+      <div class="who">資訊四乙　11144263　簡揚軒</div>
+    </section>
+
+    <!-- 區塊四：第二位作者心得 -->
+    <section class="about-block">
+      <div class="block-title">心得</div>
+      <div class="block-text">
+        在這學期的「多媒體程式設計」課程中，我們實作了「歐趴書局」線上教科書網站。因為我們這組只有兩個人，相較於其他組別，不僅工作量幾乎是翻倍的，開發過程也面臨了更大的時間與技術壓力，這無疑是一場巨大的挑戰。<br><br>
+        從前端溫暖亮眼的介面排版，到後端的購物車、訂單查詢等功能，每一個細節我們都必須親力親為。其中最讓我們自豪的，是成功整合了左側的「AI Agent 智慧課業助理」，讓使用者能透過自然語言對話來快速尋找所需的必修教科書，大幅提升了網站的互動性與實用價值。<br><br>
+        兩個人扛下完整的專案，過程中經歷了無數次的技術卡關，但也迫使我們快速學習與成長。當看著網站從無到有、各項功能順利運行時，所有的疲憊瞬間煙消雲散。這次的專案不僅強化了我們的程式設計與除錯能力，更證明了即使人數處於劣勢，只要堅持到底，依然能打造出具備完整電商功能的平台，這是我們這學期寶貴的收穫。
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    // 初始化共用導覽列（與其他頁面一致的橘色頁首）
+    initHeader({ activePage: "", showSearch: false });
+  </script>
+</body>
+</html>

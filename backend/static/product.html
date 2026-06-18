@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歐趴書局 - 商品詳情</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .main-container { flex: 1; padding: 20px 0; }
+
+    /* 商品詳情卡片 */
+    .detail-card {
+      background: #fff; border-radius: 30px; padding: 30px 35px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .detail-title-bar { font-size: 1.3rem; font-weight: bold; color: #2c3e50; margin-bottom: 20px; }
+
+    .detail-grid { display: grid; grid-template-columns: 360px 1fr; gap: 35px; align-items: start; }
+
+    /* 左側圖片區 */
+    .gallery-main {
+      width: 100%; aspect-ratio: 3/4; border-radius: 20px; background: #f0e0c8;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .gallery-main img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-main .placeholder { font-size: 4rem; color: #f5974b; }
+    .gallery-thumbs { display: flex; gap: 10px; margin-top: 12px; }
+    .thumb {
+      width: 60px; height: 70px; border-radius: 10px; background: #f0e0c8; cursor: pointer;
+      object-fit: cover; border: 2px solid transparent;
+    }
+    .thumb.active { border-color: #e67e22; }
+
+    /* 右側資訊區 */
+    .info-title { font-size: 1.5rem; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+    .info-sub { color: #e67e22; font-size: 0.95rem; margin-bottom: 16px; line-height: 1.6; }
+    .info-price { font-size: 2rem; font-weight: bold; color: #e67e22; margin-bottom: 18px; }
+    .info-rating { margin-bottom: 18px; }
+
+    /* 數量選擇器 */
+    .qty-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .qty-control { display: flex; align-items: center; gap: 0; border: 2px solid #fcd5b5; border-radius: 18px; overflow: hidden; }
+    .qty-control button { background: #fcd5b5; color: #2c3e50; width: 40px; height: 40px; font-size: 1.2rem; font-weight: bold; }
+    .qty-control button:hover { background: #e67e22; color: #fff; }
+    .qty-control .qty-val { width: 50px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+
+    /* 分頁標籤 */
+    .tab-row { display: flex; gap: 10px; margin-bottom: 18px; }
+    .tab-btn { background: #f0e0c8; color: #2c3e50; padding: 8px 22px; border-radius: 16px; font-weight: bold; font-size: 0.9rem; }
+    .tab-btn.active { background: #e67e22; color: #fff; }
+
+    /* 動作按鈕 */
+    .action-row { display: flex; gap: 15px; margin-bottom: 24px; }
+    .btn-add { background: #fcd5b5; color: #2c3e50; padding: 14px 30px; border-radius: 20px; font-weight: bold; font-size: 1rem; flex: 1; }
+    .btn-add:hover { background: #e67e22; color: #fff; }
+    .btn-buy { background: #e67e22; color: #fff; padding: 14px 30px; border-radius: 20px; font-weight: bold; font-size: 1rem; flex: 1; }
+    .btn-buy:hover { filter: brightness(1.1); }
+
+    /* 分頁內容 */
+    .tab-content { display: none; }
+    .tab-content.show { display: block; }
+    .section-h { font-size: 1.05rem; font-weight: bold; color: #2c3e50; margin: 18px 0 8px; }
+    .section-p { color: #555; line-height: 1.8; font-size: 0.95rem; }
+    .spec-table { width: 100%; border-collapse: collapse; }
+    .spec-table td { padding: 8px 6px; border-bottom: 1px solid #f0e0c8; font-size: 0.95rem; }
+    .spec-table td:first-child { color: #7f8c8d; width: 120px; }
+    .review-item { border-bottom: 1px solid #f0e0c8; padding: 12px 0; }
+    .review-item .who { font-weight: bold; color: #2c3e50; font-size: 0.9rem; }
+    .review-form { margin-top: 18px; padding-top: 16px; border-top: 2px dashed #fcd5b5; }
+    .review-form select, .review-form textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid #f0e0c8; border-radius: 12px;
+      outline: none; font-size: 0.95rem; margin-bottom: 8px; font-family: inherit;
+    }
+    .review-form textarea { min-height: 70px; resize: vertical; }
+
+    /* 你可能也喜歡 */
+    .rec-section { margin-top: 35px; }
+    .rec-title { font-size: 1.2rem; font-weight: bold; color: #2c3e50; margin-bottom: 16px; }
+    .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    .rec-card { background: #fff; border-radius: 20px; padding: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.2s; }
+    .rec-card:hover { transform: translateY(-4px); }
+    .rec-card-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; background: #f0e0c8; }
+    .rec-card-name { font-size: 0.92rem; font-weight: bold; color: #2c3e50; margin-top: 8px; }
+    .rec-card-price { color: #e67e22; font-weight: bold; margin-top: 4px; }
+    /* 輪播換位置時的淡入動畫 */
+    .rec-grid.rotating { animation: recFade 0.6s ease; }
+    @keyframes recFade { from { opacity: 0.3; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    /* 輪播指示點 */
+    .rec-dots { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+    .rec-dot { width: 9px; height: 9px; border-radius: 50%; background: #fcd5b5; }
+    .rec-dot.active { background: #e67e22; }
+
+    .loading-text { text-align: center; color: #2c3e50; padding: 60px; }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="main-container">
+    <div id="detail-area">
+      <div class="loading-text">載入商品中...</div>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+  <script src="common.js"></script>
+  <script>
+    // 初始化導覽列（顯示搜尋框）
+    initHeader({ activePage: "", showSearch: true });
+
+    // 從網址取得商品 id
+    const productId = new URLSearchParams(location.search).get("id");
+
+    let currentProduct = null;   // 目前商品資料
+    let qty = 1;                 // 目前選擇的數量
+
+    // 進頁載入商品；沒有 id 則提示
+    if (!productId) {
+      document.getElementById("detail-area").innerHTML = `<div class="loading-text">缺少商品編號 😢</div>`;
+    } else {
+      loadProduct();
+    }
+
+    // 向後端取得單一商品並渲染
+    async function loadProduct() {
+      try {
+        const p = await apiFetch(`/products/${productId}`);
+        currentProduct = p;
+        renderProduct(p);
+        setupReviews();    // 載入評論與（已購買者的）撰寫表單
+        loadRecommend();   // 載入「你可能也喜歡」
+      } catch (err) {
+        document.getElementById("detail-area").innerHTML = `<div class="loading-text">找不到此商品：${err.message}</div>`;
+      }
+    }
+
+    // 渲染商品詳情主體
+    function renderProduct(p) {
+      const tagsRows = (p.tags || []).length
+        ? p.tags.map(t => `<span style="background:#fcd5b5;color:#2c3e50;padding:3px 10px;border-radius:12px;font-size:0.82rem;margin-right:6px">${t}</span>`).join("")
+        : "（無標籤）";
+
+      document.getElementById("detail-area").innerHTML = `
+        <div class="detail-card">
+          <div class="detail-title-bar">商品詳情</div>
+          <div class="detail-grid">
+            <!-- 左：圖片 + 縮圖 -->
+            <div>
+              <div class="gallery-main" id="gallery-main">
+                <img src="${p.image}" alt="${p.name}" onerror="this.parentElement.innerHTML='<span class=\\'placeholder\\'>📚</span>">
+              </div>
+              <div class="gallery-thumbs">
+                <img class="thumb active" src="${p.image}" onerror="this.style.display='none'">
+              </div>
+            </div>
+
+            <!-- 右：資訊 -->
+            <div>
+              <div class="info-title">「${p.name}」</div>
+              <div class="info-sub">${p.description || "資工/多媒體學系必備教科書，祝你期末 All Pass 不被當！"}</div>
+              <div class="info-price">$ ${p.price}</div>
+              <div class="info-rating">${renderStars(p.rating)}　作者：${p.author}</div>
+
+              <!-- 數量 -->
+              <div class="qty-row">
+                <div class="qty-control">
+                  <button onclick="changeQty(-1)">−</button>
+                  <span class="qty-val" id="qty-val">1</span>
+                  <button onclick="changeQty(1)">＋</button>
+                </div>
+              </div>
+
+              <!-- 分頁標籤 -->
+              <div class="tab-row">
+                <button class="tab-btn active" id="tab-spec" onclick="switchTab('spec')">規格</button>
+                <button class="tab-btn" id="tab-toc" onclick="switchTab('toc')">目錄</button>
+                <button class="tab-btn" id="tab-review" onclick="switchTab('review')">評論</button>
+              </div>
+
+              <!-- 動作按鈕 -->
+              <div class="action-row">
+                <button class="btn-add" onclick="addToCart()">🛒 加入購物車</button>
+                <button class="btn-buy" onclick="buyNow()">立即購買</button>
+              </div>
+
+              <!-- 分頁內容 -->
+              <div class="tab-content show" id="content-spec">
+                <div class="section-h">商品詳細敘述</div>
+                <div class="section-p">${p.description || "本商品為二手教科書，書況良好，適合相關課程學生使用。"}</div>
+                <div class="section-h">規格</div>
+                <table class="spec-table">
+                  <tr><td>書名</td><td>${p.name}</td></tr>
+                  <tr><td>作者</td><td>${p.author}</td></tr>
+                  <tr><td>售價</td><td>$ ${p.price}</td></tr>
+                  <tr><td>評分</td><td>${renderStars(p.rating)}</td></tr>
+                  <tr><td>標籤</td><td>${tagsRows}</td></tr>
+                </table>
+              </div>
+
+              <div class="tab-content" id="content-toc">
+                <div class="section-h">目錄</div>
+                <div class="section-p">${p.description || "本書涵蓋該科目核心章節，循序漸進，適合自學與課堂使用。"}</div>
+              </div>
+
+              <div class="tab-content" id="content-review">
+                <div class="section-h">買家評論</div>
+                <div id="review-list"></div>
+                <div id="review-form-area"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 你可能也喜歡（每 4 秒輪播換位置） -->
+        <div class="rec-section">
+          <div class="rec-title">你可能也喜歡</div>
+          <div class="rec-grid" id="rec-grid"><div class="loading-text">載入中...</div></div>
+          <div class="rec-dots" id="rec-dots"></div>
+        </div>
+      `;
+    }
+
+    // 調整數量（最少 1）
+    function changeQty(delta) {
+      qty = Math.max(1, qty + delta);
+      document.getElementById("qty-val").textContent = qty;
+    }
+
+    // 切換規格 / 目錄 / 評論 分頁
+    function switchTab(tab) {
+      ["spec", "toc", "review"].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+        document.getElementById(`content-${t}`).classList.toggle("show", t === tab);
+      });
+    }
+
+    // 加入購物車（依目前數量），並更新導覽列數字
+    function addToCart() {
+      if (!currentProduct) return;
+      Cart.add(currentProduct, qty);
+      const navCart = document.getElementById("nav-cart");
+      if (navCart) {
+        const c = Cart.count();
+        navCart.textContent = c > 0 ? `購物車 (${c})` : "購物車";
+      }
+      showToast(`✅ 已加入購物車：${currentProduct.name} x${qty}`);
+    }
+
+    // 立即購買：先加入購物車再前往結帳（結帳頁未登入會自動導向登入）
+    function buyNow() {
+      if (!currentProduct) return;
+      Cart.add(currentProduct, qty);
+      location.href = "/checkout.html";
+    }
+
+    // ============ 商品評論 ============
+    // 渲染評論列表與（依登入/購買狀態）撰寫表單
+    async function setupReviews() {
+      renderReviews();
+      const formArea = document.getElementById("review-form-area");
+      if (!formArea) return;
+
+      // 未登入：提示登入
+      if (!Auth.isLoggedIn()) {
+        formArea.innerHTML = `<div class="section-p" style="margin-top:14px;color:#7f8c8d">登入並購買後即可撰寫評論。</div>`;
+        return;
+      }
+
+      // 檢查目前會員是否購買過此商品（掃描其訂單的商品項目）
+      let purchased = false;
+      try {
+        const orders = await apiFetch("/orders");
+        const me = Auth.getUsername();
+        purchased = orders.some(o => o.username === me &&
+          (o.items || []).some(it => it.productId === productId));
+      } catch (e) {}
+
+      if (!purchased) {
+        formArea.innerHTML = `<div class="section-p" style="margin-top:14px;color:#7f8c8d">購買此商品後即可撰寫評論。</div>`;
+        return;
+      }
+
+      // 已購買：顯示撰寫表單
+      formArea.innerHTML = `
+        <div class="review-form">
+          <div class="section-h">撰寫評論</div>
+          <select id="rev-rating">
+            <option value="5">★★★★★ (5)</option>
+            <option value="4">★★★★ (4)</option>
+            <option value="3">★★★ (3)</option>
+            <option value="2">★★ (2)</option>
+            <option value="1">★ (1)</option>
+          </select>
+          <textarea id="rev-text" placeholder="分享你的使用心得..."></textarea>
+          <button class="btn-buy" style="margin-top:8px" onclick="submitReview()">送出評論</button>
+        </div>`;
+    }
+
+    // 渲染評論列表
+    function renderReviews() {
+      const list = document.getElementById("review-list");
+      if (!list) return;
+      const reviews = (currentProduct && currentProduct.reviews) || [];
+      if (!reviews.length) {
+        list.innerHTML = `<div class="section-p" style="color:#7f8c8d">目前尚無評論，成為第一個評論的人吧！</div>`;
+        return;
+      }
+      list.innerHTML = reviews.map(r => `
+        <div class="review-item">
+          <span class="who">${r.username}　${renderStars(r.rating)}</span>
+          <div class="section-p">${r.text}</div>
+          <div style="font-size:0.78rem;color:#aaa">${r.date || ""}</div>
+        </div>
+      `).join("");
+    }
+
+    // 送出評論
+    async function submitReview() {
+      const rating = parseInt(document.getElementById("rev-rating").value, 10);
+      const text = document.getElementById("rev-text").value.trim();
+      if (!text) { showToast("請輸入評論內容"); return; }
+      try {
+        const res = await apiFetch(`/products/${productId}/reviews`, {
+          method: "POST",
+          body: JSON.stringify({ username: Auth.getUsername(), rating, text }),
+        });
+        currentProduct.reviews = res.reviews;   // 更新本地評論
+        renderReviews();
+        document.getElementById("rev-text").value = "";
+        showToast("✅ 評論已送出");
+      } catch (err) {
+        showToast("❌ " + err.message);
+      }
+    }
+
+    // 輪播狀態
+    let recItems = [];        // 所有其他商品
+    let recIndex = 0;         // 目前輪播起始位置
+    let recTimer = null;      // 輪播計時器
+    const REC_VISIBLE = 3;    // 一次顯示幾張
+
+    // 載入「你可能也喜歡」：取其他商品並啟動每 4 秒輪播
+    async function loadRecommend() {
+      try {
+        const all = await apiFetch("/products");
+        recItems = all.filter(p => p.id !== productId);
+        const grid = document.getElementById("rec-grid");
+        if (!grid) return;
+        if (!recItems.length) { grid.innerHTML = `<div class="loading-text">暫無推薦</div>`; return; }
+
+        renderRec();
+        // 商品數多於可見數才需要輪播
+        if (recItems.length > REC_VISIBLE) {
+          if (recTimer) clearInterval(recTimer);
+          recTimer = setInterval(() => {
+            recIndex = (recIndex + 1) % recItems.length;  // 每 4 秒往後移一個位置
+            renderRec();
+          }, 4000);
+        }
+      } catch (err) {
+        const grid = document.getElementById("rec-grid");
+        if (grid) grid.innerHTML = `<div class="loading-text">推薦載入失敗</div>`;
+      }
+    }
+
+    // 渲染目前輪播視窗（從 recIndex 起取 REC_VISIBLE 張，環狀繞回）
+    function renderRec() {
+      const grid = document.getElementById("rec-grid");
+      if (!grid) return;
+      const n = Math.min(REC_VISIBLE, recItems.length);
+      const shown = [];
+      for (let i = 0; i < n; i++) {
+        shown.push(recItems[(recIndex + i) % recItems.length]);
+      }
+      grid.innerHTML = shown.map(p => `
+        <div class="rec-card" onclick="location.href='/product.html?id=${p.id}'">
+          <img class="rec-card-img" src="${p.image}" alt="${p.name}" onerror="this.style.display='none'">
+          <div class="rec-card-name">${p.name}</div>
+          <div class="rec-card-price">$ ${p.price}</div>
+        </div>
+      `).join("");
+      // 觸發淡入動畫（移除再加上 class 以重啟動畫）
+      grid.classList.remove("rotating");
+      void grid.offsetWidth;
+      grid.classList.add("rotating");
+
+      // 指示點：標示目前起始位置
+      const dots = document.getElementById("rec-dots");
+      if (dots) {
+        dots.innerHTML = recItems.map((_, i) =>
+          `<span class="rec-dot${i === recIndex ? " active" : ""}"></span>`
+        ).join("");
+      }
+    }
+  </script>
+</body>
+</html>
