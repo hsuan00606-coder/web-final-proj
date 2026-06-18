@@ -47,29 +47,33 @@
     </div>
 
     <script>
-        // 串接與控制按鈕上傳功能 (Spec 規範合約)
+        // ⚠️ 舊版上架頁：呼叫的 /api/books/upload 端點目前後端並不存在，
+        //    且登入狀態判斷用 localStorage 'user' 與現行 Auth 機制不同。
+        //    實際使用的賣家上架／管理頁為 seller.html（對應 /api/v1/products）。
+
+        // 點擊「確認發布商品」按鈕後，蒐集欄位並上傳
         document.getElementById('upload-btn').addEventListener('click', async () => {
             const title = document.getElementById('title').value.trim();
             const price = document.getElementById('price').value.trim();
             const description = document.getElementById('description').value.trim();
             const imageFile = document.getElementById('image').files[0];
-            
-            // 權限檢查：防呆，確認賣家是否已經處於登入狀態
+
+            // 權限檢查：未登入則導向登入頁
             const userJson = localStorage.getItem('user');
             if(!userJson) {
                 alert("【系統提示】請先登入買/賣家帳號才能執行上架！");
                 window.location.href = 'login.html';
                 return;
             }
-            const sellerEmail = JSON.parse(userJson).email;
+            const sellerEmail = JSON.parse(userJson).email;   // 取出賣家 email
 
-            // 欄位防呆校驗
+            // 所有欄位與圖片皆為必填
             if(!title || !price || !description || !imageFile) {
                 alert("請注意：所有欄位與書籍照片皆為必填項目！");
                 return;
             }
 
-            // 🎯 核心技術點：建立 FormData 物件來包裝二進位檔案與文字數據
+            // 用 FormData 同時包裝文字欄位與圖片二進位檔（multipart）
             const formData = new FormData();
             formData.append("title", title);
             formData.append("price", price);
@@ -78,22 +82,23 @@
             formData.append("image", imageFile); // 圖片檔案
 
             try {
-                // 發送 FormData 請求給 FastAPI 後端 (方案 A 同源路徑)
+                // 送出上傳請求；注意：勿手動設定 Content-Type，瀏覽器會自動帶上 multipart 邊界
                 const response = await fetch('/api/books/upload', {
                     method: 'POST',
-                    body: formData  // 瀏覽器會自動生成對應的 multipart/form-data 邊界，切勿手動加 Content-Type Header
+                    body: formData
                 });
-                
+
                 const result = await response.json();
-                
+
+                // 成功則跳回首頁，失敗則顯示後端錯誤訊息
                 if (response.ok && result.status === 'success') {
                     alert("🎉 上架成功！商品照片與向量數據已完成同步。");
-                    // 毫秒級即時跳轉回首頁，方便買家透過 AI 助理搜尋
-                    window.location.href = 'index.html'; 
+                    window.location.href = 'index.html';
                 } else {
                     alert("上架失敗：" + (result.detail || "未知錯誤"));
                 }
             } catch (err) {
+                // 網路或後端無法連線
                 alert("錯誤：無法連線至後端容器，請檢查 `web-backend` 是否正常運行。");
             }
         });

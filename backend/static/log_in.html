@@ -189,11 +189,12 @@
   <div id="toast"></div>
   <script src="common.js"></script>
   <script>
-    // 若已登入直接跳轉
+    // 已登入者不需再登入，直接導向首頁
     if (Auth.isLoggedIn()) location.href = "/index.html";
 
     initHeader({ activePage: "login", showSearch: false });
 
+    // 切換「登入 / 註冊」兩個視圖，並清空先前的錯誤訊息
     function switchView(view) {
       document.getElementById("view-login").style.display    = view === "login"    ? "block" : "none";
       document.getElementById("view-register").style.display = view === "register" ? "block" : "none";
@@ -204,20 +205,24 @@
       });
     }
 
+    // 在指定區塊顯示錯誤訊息
     function showError(id, msg) {
       const el = document.getElementById(id);
       el.textContent = msg;
       el.style.display = "block";
     }
 
+    // 處理登入表單送出
     async function handleLogin(event) {
-      event.preventDefault();
+      event.preventDefault();   // 阻止表單預設送出（避免整頁重整）
       const username = document.getElementById("login-username").value.trim();
       const password = document.getElementById("login-password").value;
       const btn = document.getElementById("btn-login");
 
+      // 送出期間禁用按鈕避免重複點擊
       btn.disabled = true; btn.textContent = "登入中...";
       try {
+        // 呼叫後端登入 API，成功則保存 token 並開始倒數跳轉
         const result = await apiFetch("/auth/login", {
           method: "POST",
           body: JSON.stringify({ username, password }),
@@ -225,11 +230,13 @@
         Auth.save(result.token, result.username);
         startCountdown("登入成功！", "正在跳轉至首頁...");
       } catch (err) {
+        // 失敗顯示錯誤（如「帳號或密碼錯誤」）並恢復按鈕
         showError("login-error", err.message);
         btn.disabled = false; btn.textContent = "登入";
       }
     }
 
+    // 處理註冊表單送出
     async function handleRegister(event) {
       event.preventDefault();
       const username = document.getElementById("reg-username").value.trim();
@@ -239,6 +246,7 @@
 
       btn.disabled = true; btn.textContent = "註冊中...";
       try {
+        // 註冊成功後後端直接回傳 token，等同自動登入，接著倒數跳轉
         const result = await apiFetch("/auth/register", {
           method: "POST",
           body: JSON.stringify({ username, email, password }),
@@ -251,6 +259,7 @@
       }
     }
 
+    // 成功後顯示 3 秒倒數遮罩，結束後跳轉首頁
     function startCountdown(title, sub) {
       const overlay  = document.getElementById("countdown-overlay");
       const numEl    = document.getElementById("count-num");
@@ -263,7 +272,7 @@
       const t = setInterval(() => {
         n--;
         numEl.textContent = n;
-        if (n <= 0) { clearInterval(t); location.href = "/index.html"; }
+        if (n <= 0) { clearInterval(t); location.href = "/index.html"; }   // 倒數結束跳轉
       }, 1000);
     }
   </script>

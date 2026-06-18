@@ -182,13 +182,15 @@
   <div id="toast"></div>
   <script src="common.js"></script>
   <script>
-    // 需要登入
+    // 購物車為需登入頁面；未登入直接導向登入頁
     if (!Auth.isLoggedIn()) {
       location.href = "/log_in.html";
     }
 
+    // 初始化共用導覽列（標記目前在購物車頁、顯示搜尋框）
     initHeader({ activePage: "cart", showSearch: true });
 
+    // 計算金額：小計、運費（滿 500 免運否則 60）、總計
     function calcSummary(items) {
       const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
       const shipping = subtotal >= 500 ? 0 : 60;
@@ -196,10 +198,12 @@
       return { subtotal, shipping, total };
     }
 
+    // 依購物車內容重繪整個畫面
     function renderCart() {
       const items = Cart.get();
       const content = document.getElementById("cart-content");
 
+      // 購物車為空時顯示空狀態提示
       if (!items.length) {
         content.innerHTML = `
           <div class="empty-state">
@@ -210,6 +214,7 @@
         return;
       }
 
+      // 取得金額摘要，組出每筆商品列與結帳區塊
       const { subtotal, shipping, total } = calcSummary(items);
 
       content.innerHTML = `
@@ -244,6 +249,7 @@
       `;
     }
 
+    // 調整某商品數量（數量 <=0 時 Cart 會自動移除），並同步導覽列數字與畫面
     function updateQty(productId, newQty) {
       Cart.updateQty(productId, newQty); // qty<=0 自動移除
       const navCart = document.getElementById("nav-cart");
@@ -254,6 +260,7 @@
       renderCart();
     }
 
+    // 移除指定商品並更新導覽列數字、重繪、提示
     function removeItem(productId) {
       Cart.remove(productId);
       const navCart = document.getElementById("nav-cart");
@@ -265,11 +272,13 @@
       showToast("已移除商品");
     }
 
+    // 前往結帳；購物車為空時擋下並提示
     function goCheckout() {
       if (!Cart.get().length) { showToast("購物車是空的"); return; }
       location.href = "/checkout.html";
     }
 
+    // 進頁先繪製一次
     renderCart();
   </script>
 </body>

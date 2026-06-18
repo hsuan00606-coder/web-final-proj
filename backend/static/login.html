@@ -34,9 +34,12 @@
     </div>
 
     <script>
-        let isLoginMode = true;
+        // ⚠️ 舊版登入頁：呼叫的 /api/login、/api/register 端點目前後端並不存在，
+        //    實際使用的登入頁為 log_in.html（對應 /api/v1/auth/*）。此檔保留作參考。
 
-        // 切換登入與註冊介面
+        let isLoginMode = true;   // true=登入模式、false=註冊模式
+
+        // 切換登入與註冊介面：更新標題、按鈕文字、姓名欄位顯示與連結文字
         document.getElementById('toggle-auth').addEventListener('click', (e) => {
             e.preventDefault();
             isLoginMode = !isLoginMode;
@@ -46,16 +49,17 @@
             e.target.innerText = isLoginMode ? "還沒有帳號？切換至註冊" : "已有帳號？切換至登入";
         });
 
-        // 處理按鈕提交功能
+        // 表單送出：依目前模式呼叫登入或註冊
         document.getElementById('submit-btn').addEventListener('click', async () => {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const name = document.getElementById('name').value.trim();
 
+            // Email 與密碼為必填
             if(!email || !password) { alert("請填寫必填欄位！"); return; }
 
             if (isLoginMode) {
-                // 處理登入通訊
+                // 登入：送出帳密，成功則存使用者資料並跳轉首頁
                 const res = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -70,7 +74,7 @@
                     alert("登入失敗，請檢查帳密");
                 }
             } else {
-                // 處理註冊通訊 (Spec 規範：毫秒級即時跳轉)
+                // 註冊：送出帳密與姓名，成功則重新載入回到登入模式
                 const res = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -78,9 +82,8 @@
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    // 收到後不進行不必要的延遲，毫秒級跳轉至登入模式
                     alert("註冊成功！已為您即時引導至登入畫面。");
-                    window.location.reload(); 
+                    window.location.reload();
                 } else {
                     alert("註冊失敗：" + data.detail);
                 }

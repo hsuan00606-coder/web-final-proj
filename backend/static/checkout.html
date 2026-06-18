@@ -196,20 +196,24 @@
   <div id="toast"></div>
   <script src="common.js"></script>
   <script>
+    // 結帳為需登入頁；未登入導向登入頁
     if (!Auth.isLoggedIn()) location.href = "/log_in.html";
 
     initHeader({ showSearch: false });
 
+    // 取得購物車內容；若為空則退回購物車頁（無從結帳）
     const cartItems = Cart.get();
     if (!cartItems.length) location.href = "/cart.html";
 
+    // 預先計算金額：小計、運費（滿 500 免運）、5% 稅金、總計（四捨五入到分）
     const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
     const shipping = subtotal >= 500 ? 0 : 60;
     const tax      = Math.round(subtotal * 0.05 * 100) / 100;
     const total    = Math.round((subtotal + shipping + tax) * 100) / 100;
 
-    let payMethod = "credit";
+    let payMethod = "credit";   // 目前選擇的付款方式（預設信用卡）
 
+    // 繪製整個結帳畫面（配送資訊、付款方式、訂單摘要）
     function render() {
       document.getElementById("main-content").innerHTML = `
         <!-- 左欄：配送 + 付款 -->
@@ -305,6 +309,7 @@
       `;
     }
 
+    // 切換付款方式分頁：更新分頁 active 樣式並只顯示對應欄位
     function switchPayment(method) {
       payMethod = method;
       ["credit", "atm", "cod"].forEach(m => {
@@ -313,16 +318,18 @@
       });
     }
 
+    // 送出訂單：驗證配送與付款資訊 → 呼叫後端建立訂單 → 清空購物車 → 導向結果頁
     async function submitOrder() {
       const name    = document.getElementById("del-name").value.trim();
       const phone   = document.getElementById("del-phone").value.trim();
       const address = document.getElementById("del-address").value.trim();
 
+      // 配送資訊必填檢查
       if (!name || !phone || !address) {
         showToast("❗ 請填寫完整配送資訊"); return;
       }
 
-      // 付款資訊驗證
+      // 依所選付款方式驗證對應欄位，並整理成要送出的付款資料
       let paymentData = { method: "" };
       if (payMethod === "credit") {
         const num = document.getElementById("cc-number").value.trim();
@@ -339,11 +346,13 @@
         paymentData = { method: "貨到付款", status: "未付款" };
       }
 
+      // 送出期間禁用按鈕，避免重複下單
       const btn = document.getElementById("btn-order");
       btn.disabled = true;
       btn.textContent = "處理中...";
 
       try {
+        // 呼叫後端建立訂單，帶上商品、配送與付款資訊
         const result = await apiFetch("/orders", {
           method: "POST",
           body: JSON.stringify({
@@ -353,18 +362,20 @@
           }),
         });
 
-        // 儲存最新訂單 ID 給結果頁使用
+        // 儲存最新訂單 ID 給結果頁使用，清空購物車後跳轉
         localStorage.setItem("lastOrderId", result.order.orderId);
         Cart.clear();
         location.href = "/order_result.html";
 
       } catch (err) {
+        // 失敗則提示並恢復按鈕讓使用者重試
         showToast("❗ 下單失敗：" + err.message);
         btn.disabled = false;
         btn.textContent = "確認下單";
       }
     }
 
+    // 進頁先繪製一次
     render();
   </script>
 </body>

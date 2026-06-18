@@ -144,24 +144,28 @@
   <div id="toast"></div>
   <script src="common.js"></script>
   <script>
+    // 歷史訂單為需登入頁；未登入導向登入頁
     if (!Auth.isLoggedIn()) location.href = "/log_in.html";
 
     initHeader({ activePage: "orders", showSearch: false });
 
+    // 將訂單狀態文字對應到顯示用的樣式類別與圖示
     function statusInfo(status) {
       const map = {
         "已送達": { cls: "delivered", icon: "✓" },
         "配送中": { cls: "shipping",  icon: "🚗" },
         "處理中": { cls: "processing", icon: "−" },
       };
-      return map[status] || { cls: "processing", icon: "?" };
+      return map[status] || { cls: "processing", icon: "?" };  // 未知狀態的後備顯示
     }
 
+    // 向後端取得訂單清單並繪製成表格
     async function loadOrders() {
       const content = document.getElementById("orders-content");
       try {
         const orders = await apiFetch("/orders");
 
+        // 無訂單時顯示空狀態
         if (!orders.length) {
           content.innerHTML = `
             <div class="page-title">歷史訂單</div>
@@ -189,7 +193,7 @@
             </div>
 
             ${orders.map(order => {
-              const s = statusInfo(order.status);
+              const s = statusInfo(order.status);   // 取得此訂單狀態的樣式
               return `
                 <div class="order-row">
                   <span style="font-size:0.85rem;font-weight:bold">${order.orderId}</span>
@@ -212,16 +216,19 @@
           </div>
         `;
       } catch (err) {
+        // 載入失敗顯示錯誤訊息
         content.innerHTML = `<div class="loading-text">載入失敗：${err.message}</div>`;
       }
     }
 
+    // 查看單筆訂單詳情：把訂單編號暫存後跳轉到結果頁
     function viewDetail(orderId) {
       document.getElementById("search-order-input") // 如果在同頁有輸入框則設值
       localStorage.setItem("queryOrderId", orderId);
       location.href = `/order_result.html`;
     }
 
+    // 進頁即載入訂單
     loadOrders();
   </script>
 </body>

@@ -1,7 +1,8 @@
-fastapi==0.137.1
-uvicorn[standard]==0.49.0
-pymongo==4.17.0
-bcrypt==5.0.0
-python-multipart==0.0.32
-pydantic==2.13.4
-requests==2.33.1
+# Python 套件依賴清單（由 Dockerfile 透過 pip 安裝）
+fastapi==0.137.1          # Web 框架，提供 API 路由
+uvicorn[standard]==0.49.0 # ASGI 伺服器，用來執行 FastAPI 應用
+pymongo==4.17.0           # MongoDB 連線驅動
+bcrypt==5.0.0             # 密碼雜湊（安全儲存使用者密碼）
+python-multipart==0.0.32  # 解析 multipart/form-data（商品圖片上傳所需）
+pydantic==2.13.4          # 請求資料的型別驗證
+requests==2.33.1          # HTTP 用戶端，後端用來呼叫 Ollama AI 容器

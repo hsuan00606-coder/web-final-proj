@@ -268,18 +268,19 @@
   <div id="toast"></div>
   <script src="common.js"></script>
   <script>
+    // 訂單查詢為需登入頁；未登入導向登入頁
     if (!Auth.isLoggedIn()) location.href = "/log_in.html";
 
     initHeader({ activePage: "order_result", showSearch: false });
 
-    // 若從結帳頁跳轉，自動顯示最新訂單
+    // 情境一：剛結帳完跳轉過來 → 自動顯示最新訂單並標示為新成立
     const lastId = localStorage.getItem("lastOrderId");
     if (lastId) {
       localStorage.removeItem("lastOrderId");
       loadOrder(lastId, true);
       document.getElementById("search-order-input").value = lastId;
     }
-    // 若從歷史訂單頁跳轉，自動查詢該訂單
+    // 情境二：從歷史訂單頁點「查看詳情」跳轉 → 自動查詢該訂單
     const queryId = localStorage.getItem("queryOrderId");
     if (queryId && !lastId) {
       localStorage.removeItem("queryOrderId");
@@ -287,12 +288,14 @@
       document.getElementById("search-order-input").value = queryId;
     }
 
+    // 情境三：使用者手動輸入訂單編號查詢
     async function searchOrder() {
       const id = document.getElementById("search-order-input").value.trim();
       if (!id) { showToast("請輸入訂單編號"); return; }
       loadOrder(id, false);
     }
 
+    // 向後端查詢單筆訂單；isNew 表示是否為剛成立（顯示成功橫幅）
     async function loadOrder(orderId, isNew) {
       const area = document.getElementById("order-result-area");
       area.innerHTML = `<div class="result-card"><div class="loading-text">查詢中...</div></div>`;
@@ -300,13 +303,15 @@
         const order = await apiFetch(`/orders/${orderId}`);
         renderOrder(order, isNew);
       } catch (err) {
+        // 查無此訂單的提示
         area.innerHTML = `<div class="result-card"><div class="empty-state"><div class="icon">📭</div><p>找不到訂單：${orderId}</p></div></div>`;
       }
     }
 
+    // 繪製訂單詳情：包含物流進度條、商品明細、金額與配送/付款資訊
     function renderOrder(order, isNew) {
       const area = document.getElementById("order-result-area");
-      const stage = order.trackingStage || 1;
+      const stage = order.trackingStage || 1;   // 目前物流階段（1~4）
       const steps = [
         { label: "訂單成立", icon: "✓" },
         { label: "處理中",   icon: "⚙" },
@@ -314,6 +319,7 @@
         { label: "已送達",   icon: "📦" },
       ];
 
+      // 依目前階段為每一步上色：已過為 done、正在進行為 active
       const trackingHtml = steps.map((s, i) => {
         const stepNum = i + 1;
         const cls = stepNum < stage ? "done" : stepNum === stage ? "active" : "";

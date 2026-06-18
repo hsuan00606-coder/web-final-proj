@@ -128,11 +128,14 @@
 
   <script src="common.js"></script>
   <script>
+    // 初始化導覽列（首頁、顯示搜尋框）
     initHeader({ activePage: "", showSearch: true });
 
+    // 從網址讀取搜尋關鍵字 q（由搜尋框跳轉帶入）
     const params = new URLSearchParams(location.search);
     const keyword = params.get("q") || "";
 
+    // 頁面載入後，把關鍵字回填到搜尋框，方便使用者看到目前搜尋內容
     window.addEventListener("DOMContentLoaded", () => {
       const input = document.getElementById("search-input");
       if (input && keyword) input.value = keyword;
@@ -141,13 +144,16 @@
     // ==========================================
     // 🤖 串接 AI Agent 對話與動態模糊篩選邏輯
     // ==========================================
+    // 為這次造訪產生一組隨機 session id，讓後端區分不同對話的歷史
     const sessionId = "session_" + Math.random().toString(36).substr(2, 9);
 
+    // 綁定發送按鈕與 Enter 鍵，皆觸發 AI 對話
     document.getElementById('btn-chat-send').addEventListener('click', handleAiChat);
     document.getElementById('chat-input').addEventListener('keydown', (e) => {
       if(e.key === 'Enter') handleAiChat();
     });
 
+    // 送出訊息給 AI 並處理回覆；回覆後依使用者訊息連動篩選右側商品
     async function handleAiChat() {
       const input = document.getElementById('chat-input');
       const sendBtn = document.getElementById('btn-chat-send');
@@ -196,14 +202,17 @@
     }
 
     // ==========================================
-    // 原生商品加載 (完全保持你原汁原味的邏輯)
+    // 商品載入與顯示
     // ==========================================
+    // 載入商品；searchKeyword 有值則做搜尋，否則沿用網址帶入的 keyword
     async function loadProducts(searchKeyword) {
       const q = searchKeyword !== undefined ? searchKeyword : keyword;
       try {
+        // 有關鍵字則帶 q 參數查詢，否則取全部
         const url = q ? `/products?q=${encodeURIComponent(q)}` : "/products";
         const products = await apiFetch(url);
 
+        // 有搜尋時顯示結果提示，否則清空提示框
         const hintBox = document.getElementById("search-hint-box");
         if (q) {
           hintBox.innerHTML = `<div class="search-hint">搜尋「<span>${q}</span>」，共找到 ${products.length} 筆結果</div>`;
@@ -211,12 +220,14 @@
           hintBox.innerHTML = "";
         }
 
+        // 無結果時的提示
         const grid = document.getElementById("product-grid");
         if (!products.length) {
           grid.innerHTML = `<div class="loading-text">😢 找不到符合的商品</div>`;
           return;
         }
 
+        // 將每筆商品組成卡片；onerror 在圖片載入失敗時改顯示書本圖示
         grid.innerHTML = products.map((p) => `
           <div class="product-card" onclick="location.href='/product.html?id=${p.id}'">
             <div class="product-card-img">
@@ -233,10 +244,12 @@
         `).join("");
 
       } catch (err) {
+        // 載入失敗顯示錯誤訊息
         document.getElementById("product-grid").innerHTML = `<div class="loading-text">載入失敗：${err.message}</div>`;
       }
     }
 
+    // 從商品列表加入購物車，並同步更新導覽列數字與提示
     function addToCartFromList(product) {
       Cart.add(product, 1);
       const navCart = document.getElementById("nav-cart");
@@ -247,6 +260,7 @@
       showToast(`✅ 已加入購物車：${product.name}`);
     }
 
+    // 進頁先載入商品（依網址 q 決定全部或搜尋結果）
     loadProducts();
   </script>
 </body>
