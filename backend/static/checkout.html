@@ -352,13 +352,18 @@
       btn.textContent = "處理中...";
 
       try {
-        // 呼叫後端建立訂單，帶上商品、配送與付款資訊
+        // 呼叫後端建立訂單，帶上商品、配送、付款與「正確計算的金額」
+        // 總計 = 小計 + 運費 + 稅務（這些值若不傳，後端會用預設值導致總計顯示為 0）
         const result = await apiFetch("/orders", {
           method: "POST",
           body: JSON.stringify({
             items: cartItems,
             delivery: { name, phone, address },
             payment: paymentData,
+            subtotal: subtotal,
+            shipping: shipping,
+            tax: tax,
+            total: total,
           }),
         });
 

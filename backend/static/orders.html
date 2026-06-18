@@ -194,6 +194,12 @@
 
             ${orders.map(order => {
               const s = statusInfo(order.status);   // 取得此訂單狀態的樣式
+              // 防呆：總計一律以「小計 + 運費 + 稅務 − 折扣」重算
+              const sub = order.items.reduce((acc, i) => acc + i.price * i.qty, 0);
+              const ship = order.shipping || 0;
+              const tax = order.tax || 0;
+              const discount = order.discount || 0;
+              const total = sub + ship + tax - discount;
               return `
                 <div class="order-row">
                   <span style="font-size:0.85rem;font-weight:bold">${order.orderId}</span>
@@ -201,10 +207,10 @@
                   <div class="item-names">
                     ${order.items.map(i => `<span class="item-name-tag">${i.name}</span>`).join("")}
                   </div>
-                  <span>$${order.shipping.toFixed(2)}</span>
-                  <span>$${order.tax.toFixed(2)}</span>
-                  <span>${order.discount ? "$" + order.discount.toFixed(2) : "$0.00"}</span>
-                  <span class="order-total">$${order.total.toFixed(2)}</span>
+                  <span>$${ship.toFixed(2)}</span>
+                  <span>$${tax.toFixed(2)}</span>
+                  <span>${discount ? "$" + discount.toFixed(2) : "$0.00"}</span>
+                  <span class="order-total">$${total.toFixed(2)}</span>
                   <div class="status-badge">
                     <div class="status-icon ${s.cls}">${s.icon}</div>
                     <span class="status-label">${order.status}</span>

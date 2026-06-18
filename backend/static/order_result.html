@@ -381,11 +381,22 @@
               </table>
 
               <div class="amount-summary">
-                <div class="amount-row"><span>小計</span><span>$${order.items.reduce((s,i)=>s+i.price*i.qty,0).toFixed(2)}</span></div>
-                <div class="amount-row"><span>運費</span><span>$${order.shipping.toFixed(2)}</span></div>
-                <div class="amount-row"><span>稅務</span><span>$${order.tax.toFixed(2)}</span></div>
-                ${order.discount ? `<div class="amount-row"><span>折扣(Coupon)</span><span>${order.discount.toFixed(2)}</span></div>` : ""}
-                <div class="amount-row total"><span>總計</span><span>$${order.total.toFixed(2)}</span></div>
+                ${(() => {
+                  // 防呆：總計一律以「小計 + 運費 + 稅務 − 折扣」當場重算，
+                  // 確保即使舊訂單存的 total 不正確，畫面也顯示正確結果。
+                  const sub = order.items.reduce((s,i)=>s+i.price*i.qty,0);
+                  const ship = order.shipping || 0;
+                  const tax = order.tax || 0;
+                  const discount = order.discount || 0;
+                  const total = sub + ship + tax - discount;
+                  return `
+                    <div class="amount-row"><span>小計</span><span>$${sub.toFixed(2)}</span></div>
+                    <div class="amount-row"><span>運費</span><span>$${ship.toFixed(2)}</span></div>
+                    <div class="amount-row"><span>稅務</span><span>$${tax.toFixed(2)}</span></div>
+                    ${discount ? `<div class="amount-row"><span>折扣(Coupon)</span><span>-$${discount.toFixed(2)}</span></div>` : ""}
+                    <div class="amount-row total"><span>總計</span><span>$${total.toFixed(2)}</span></div>
+                  `;
+                })()}
               </div>
             </div>
           </div>
