@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="880" viewBox="0 0 1366 880" font-family="'Microsoft JhengHei','PingFang TC','Segoe UI',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9ecfb"/>
+      <stop offset="0.55" stop-color="#eef1f8"/>
+      <stop offset="1" stop-color="#fde7dc"/>
+    </linearGradient>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7a8aa8"/></marker>
+    <style>
+      .mod{fill:#fff;stroke:#c4cbe0;stroke-width:1.5;}
+      .hd{fill:#e67e22;}
+      .hd2{fill:#f0913f;}
+      .hdt{fill:#fff;font-weight:bold;font-size:16px;}
+      .be{fill:#2c3e50;}
+      .bet{fill:#fff;font-weight:bold;}
+      .db{fill:#fdead9;stroke:#b5651d;stroke-width:1.5;}
+      .title{fill:#2c3e50;font-weight:bold;}
+      .t{fill:#34495e;font-size:13px;}
+      .s{fill:#7f8c8d;font-size:12px;}
+      .ln{stroke:#9aa6c2;stroke-width:1.6;fill:none;marker-end:url(#ar);}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1366" height="880" fill="url(#bg)"/>
+
+  <!-- 標題 -->
+  <rect class="mod" x="498" y="20" width="370" height="62" rx="14"/>
+  <text class="title" x="683" y="50" font-size="22" text-anchor="middle">歐趴書局 — 系統功能架構</text>
+  <text class="s" x="683" y="72" text-anchor="middle">二手教科書智慧拍賣系統</text>
+
+  <!-- 五大功能模組 -->
+  <!-- 1 會員系統 -->
+  <g>
+    <rect class="mod" x="24" y="116" width="250" height="244" rx="16"/>
+    <path class="hd" d="M24,116 h250 a0,0 0 0 1 0,0 v34 h-250 v-34 a16,16 0 0 1 16,-16 z" />
+    <rect class="hd" x="24" y="116" width="250" height="40" rx="16"/>
+    <rect class="hd" x="24" y="140" width="250" height="16"/>
+    <text class="hdt" x="149" y="143" text-anchor="middle">👤 會員系統</text>
+    <text class="t" x="44" y="190">• 註冊 / 登入 / 登出</text>
+    <text class="t" x="44" y="218">• 密碼 bcrypt 加密儲存</text>
+    <text class="t" x="44" y="246">• 登入狀態 token 管理</text>
+    <text class="t" x="44" y="274">• 權限控管（需登入頁）</text>
+    <text class="s" x="44" y="330">會員資料長期保留</text>
+  </g>
+
+  <!-- 2 商品系統 -->
+  <g>
+    <rect class="mod" x="290" y="116" width="250" height="244" rx="16"/>
+    <rect class="hd" x="290" y="116" width="250" height="40" rx="16"/>
+    <rect class="hd" x="290" y="140" width="250" height="16"/>
+    <text class="hdt" x="415" y="143" text-anchor="middle">📚 商品系統</text>
+    <text class="t" x="310" y="190">• 商品瀏覽 / 關鍵字搜尋</text>
+    <text class="t" x="310" y="218">• 商品詳情（規格/目錄/評論）</text>
+    <text class="t" x="310" y="246">• 賣家上架 / 編輯</text>
+    <text class="t" x="310" y="274">• 商品圖片上傳</text>
+    <text class="t" x="310" y="302">• 商品評論（限已購買）</text>
+    <text class="t" x="310" y="330">• 商品標籤管理</text>
+  </g>
+
+  <!-- 3 AI 智慧助理 -->
+  <g>
+    <rect class="mod" x="556" y="116" width="250" height="244" rx="16"/>
+    <rect class="hd2" x="556" y="116" width="250" height="40" rx="16"/>
+    <rect class="hd2" x="556" y="140" width="250" height="16"/>
+    <text class="hdt" x="681" y="143" text-anchor="middle">🤖 AI 智慧助理</text>
+    <text class="t" x="576" y="190">• llama3.1 自然語言對話</text>
+    <text class="t" x="576" y="218">• 繁體中文課業諮詢</text>
+    <text class="t" x="576" y="246">• 贅詞過濾 + 關鍵字萃取</text>
+    <text class="t" x="576" y="274">• 對話連動商品搜尋</text>
+    <text class="s" x="576" y="320">例：「我想找C語言」</text>
+    <text class="s" x="576" y="340">→ 自動篩出相關書籍</text>
+  </g>
+
+  <!-- 4 購物與訂單 -->
+  <g>
+    <rect class="mod" x="822" y="116" width="250" height="244" rx="16"/>
+    <rect class="hd" x="822" y="116" width="250" height="40" rx="16"/>
+    <rect class="hd" x="822" y="140" width="250" height="16"/>
+    <text class="hdt" x="947" y="143" text-anchor="middle">🛒 購物與訂單</text>
+    <text class="t" x="842" y="190">• 購物車（數量 / 移除）</text>
+    <text class="t" x="842" y="218">• 結帳：配送 + 付款</text>
+    <text class="t" x="842" y="246">• 總計 = 小計+運費+稅務</text>
+    <text class="t" x="842" y="274">• 建立訂單（記錄買家）</text>
+    <text class="t" x="842" y="302">• 訂單查詢 / 歷史訂單</text>
+    <text class="t" x="842" y="330">• 物流進度追蹤</text>
+  </g>
+
+  <!-- 5 通用功能 -->
+  <g>
+    <rect class="mod" x="1088" y="116" width="250" height="244" rx="16"/>
+    <rect class="hd2" x="1088" y="116" width="250" height="40" rx="16"/>
+    <rect class="hd2" x="1088" y="140" width="250" height="16"/>
+    <text class="hdt" x="1213" y="143" text-anchor="middle">🌐 通用功能</text>
+    <text class="t" x="1108" y="190">• 多語系（繁中/英/簡）</text>
+    <text class="t" x="1108" y="218">• 首頁商品輪播廣告</text>
+    <text class="t" x="1108" y="246">• 「你可能也喜歡」輪播</text>
+    <text class="t" x="1108" y="274">• 關於作者 / 心得</text>
+    <text class="t" x="1108" y="302">• 響應式橘色介面</text>
+  </g>
+
+  <!-- 模組 → 後端 箭頭 -->
+  <path class="ln" d="M149,360 L149,408"/>
+  <path class="ln" d="M415,360 L415,408"/>
+  <path class="ln" d="M681,360 L681,408"/>
+  <path class="ln" d="M947,360 L947,408"/>
+  <path class="ln" d="M1213,360 L1213,408"/>
+
+  <!-- 後端 API -->
+  <rect class="be" x="24" y="410" width="1314" height="74" rx="16"/>
+  <text class="bet" x="683" y="442" font-size="18" text-anchor="middle">後端 API　FastAPI (main.py)</text>
+  <text x="683" y="466" fill="#cfd6e6" font-size="13" text-anchor="middle">埠 8000　·　相對路徑 /api/v1　·　同時託管前端頁面與商品圖片　·　共用 common.js（apiFetch / Auth / Cart / I18n）</text>
+
+  <!-- 後端 → 資料層 -->
+  <path class="ln" d="M334,484 L334,548"/>
+  <path class="ln" d="M829,484 L829,548"/>
+  <path class="ln" d="M1174,484 L1174,548"/>
+
+  <!-- 資料層 -->
+  <text class="title" x="24" y="540" font-size="15">資料與微服務層（Docker 容器，含持久卷）</text>
+
+  <rect class="db" x="24" y="550" width="620" height="150" rx="16"/>
+  <text class="title" x="44" y="582" font-size="16">🗄️ MongoDB（埠 27017）</text>
+  <text class="t" x="44" y="612">• users　會員帳號（bcrypt）</text>
+  <text class="t" x="44" y="638">• books　商品 + 標籤 + 評論</text>
+  <text class="t" x="44" y="664">• orders　訂單（含買家、金額、物流）</text>
+  <text class="s" x="44" y="690">持久卷 mongo-data → 系統長期記憶</text>
+
+  <rect class="db" x="664" y="550" width="330" height="150" rx="16"/>
+  <text class="title" x="684" y="582" font-size="16">🧠 Ollama（埠 11434）</text>
+  <text class="t" x="684" y="612">• llama3.1 大語言模型</text>
+  <text class="t" x="684" y="638">• 需 NVIDIA GPU 加速</text>
+  <text class="s" x="684" y="666">連線失敗 → 自動退回測試模式</text>
+  <text class="s" x="684" y="688">持久卷 ollama-data</text>
+
+  <rect class="db" x="1010" y="550" width="328" height="150" rx="16"/>
+  <text class="title" x="1030" y="582" font-size="16">🔎 ChromaDB（埠 8001）</text>
+  <text class="t" x="1030" y="612">• 向量資料庫</text>
+  <text class="t" x="1030" y="638">• 語意檢索（預留擴充）</text>
+  <text class="s" x="1030" y="666">持久卷 chroma-data</text>
+
+  <!-- 啟動/部署 -->
+  <rect class="mod" x="24" y="724" width="1314" height="120" rx="16"/>
+  <text class="title" x="44" y="754" font-size="15">部署與維運（Docker 全容器化）</text>
+  <text class="t" x="44" y="784">• 啟動：Docker Desktop → deploy.ps1（建置/啟動容器、空庫才匯入初始資料、暖機 llama3.1）</text>
+  <text class="t" x="44" y="810">• 外網分享：geturl.ps1 輸出公開網址（SSH 反向通道）　·　四容器：web-backend / mongodb / ollama-ai / chromadb</text>
+  <text class="s" x="44" y="834">前後端同源（相對路徑），可於本機、區網或外網存取</text>
+</svg>
